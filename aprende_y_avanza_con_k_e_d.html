@@ -1,0 +1,2214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APRENDE Y AVANZA CON K.E.D | Videojuego Educativo sobre IA</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Orbitron & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Orbitron', 'sans-serif'],
+                    },
+                    colors: {
+                        cyber: {
+                            bg: '#060B19',
+                            panel: '#0D152C',
+                            card: '#131F42',
+                            purple: '#A855F7',
+                            purpleDark: '#6B21A8',
+                            cyan: '#38BDF8',
+                            green: '#10B981',
+                            neonGreen: '#39FF14',
+                            danger: '#F43F5E',
+                            warning: '#F59E0B'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-dark: #060B19;
+            --panel-dark: #0D152C;
+            --neon-purple: #A855F7;
+            --neon-cyan: #38BDF8;
+            --neon-green: #39FF14;
+            --neon-red: #F43F5E;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #F1F5F9;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 12% 18%, rgba(168, 85, 247, 0.14) 0%, transparent 42%),
+                radial-gradient(circle at 88% 82%, rgba(56, 189, 248, 0.14) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 60%);
+        }
+
+        /* Canvas de red neuronal en el fondo */
+        #neural-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Glassmorphism ciber-educativo */
+        .cyber-glass {
+            background: rgba(13, 21, 44, 0.82);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            box-shadow: 0 10px 35px -5px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .cyber-card {
+            background: linear-gradient(145deg, rgba(19, 31, 66, 0.88), rgba(10, 17, 36, 0.94));
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .cyber-card:hover {
+            border-color: rgba(56, 189, 248, 0.65);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.18);
+            transform: translateY(-3px);
+        }
+
+        /* Efectos de brillo neón */
+        .text-glow-cyan {
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.65), 0 0 28px rgba(56, 189, 248, 0.3);
+        }
+        .text-glow-purple {
+            text-shadow: 0 0 12px rgba(168, 85, 247, 0.65), 0 0 28px rgba(168, 85, 247, 0.3);
+        }
+        .text-glow-green {
+            text-shadow: 0 0 12px rgba(57, 255, 20, 0.6), 0 0 25px rgba(16, 185, 129, 0.35);
+        }
+
+        .border-glow-cyan {
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.35), inset 0 0 12px rgba(56, 189, 248, 0.1);
+        }
+        .border-glow-green {
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.35), inset 0 0 12px rgba(16, 185, 129, 0.15);
+        }
+        .border-glow-red {
+            box-shadow: 0 0 22px rgba(244, 63, 94, 0.45), inset 0 0 14px rgba(244, 63, 94, 0.15);
+        }
+
+        /* Botones estilo videojuego */
+        .btn-cyber {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+        .btn-cyber::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+            transition: left 0.5s ease;
+        }
+        .btn-cyber:hover::after {
+            left: 100%;
+        }
+        .btn-cyber:active {
+            transform: scale(0.97);
+        }
+
+        /* Animaciones del asistente K.E.D */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-9px); }
+        }
+        @keyframes pulseRing {
+            0% { transform: scale(0.92); opacity: 0.85; }
+            70% { transform: scale(1.18); opacity: 0; }
+            100% { transform: scale(1.18); opacity: 0; }
+        }
+        @keyframes shakeAlert {
+            0%, 100% { transform: translateX(0); }
+            15%, 45%, 75% { transform: translateX(-8px); }
+            30%, 60%, 90% { transform: translateX(8px); }
+        }
+        @keyframes viralPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(244, 63, 94, 0.7)); }
+            50% { transform: scale(1.12); filter: drop-shadow(0 0 18px rgba(244, 63, 94, 1)); }
+        }
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(400%); }
+        }
+
+        .animate-float {
+            animation: float 3.6s ease-in-out infinite;
+        }
+        .animate-pulse-ring {
+            animation: pulseRing 2.4s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+        }
+        .animate-shake {
+            animation: shakeAlert 0.55s ease-in-out;
+        }
+        .animate-viral {
+            animation: viralPulse 1.3s ease-in-out infinite;
+        }
+
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #060B19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1E293B;
+            border-radius: 9999px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #38BDF8;
+        }
+
+        /* Transición de pantallas */
+        .screen-section {
+            display: none;
+            animation: fadeInSlide 0.4s ease-out forwards;
+        }
+        .screen-section.active {
+            display: block;
+        }
+        @keyframes fadeInSlide {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Efecto de destello rojo en pantalla por consecuencia negativa */
+        .alert-flash-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, rgba(244, 63, 94, 0.25) 0%, rgba(159, 18, 57, 0.45) 100%);
+            pointer-events: none;
+            z-index: 45;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+        .alert-flash-overlay.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-cyber-cyan selection:text-cyber-bg">
+
+    <!-- Fondo animado de Red Neuronal -->
+    <canvas id="neural-canvas"></canvas>
+
+    <!-- Superposición visual de alerta para consecuencias negativas -->
+    <div id="alert-overlay" class="alert-flash-overlay"></div>
+
+    <!-- BARRA SUPERIOR PERSISTENTE (HUD) -->
+    <header class="sticky top-0 z-40 cyber-glass border-b border-cyber-cyan/30 px-3 sm:px-6 py-2.5">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <!-- Logo / Título corto -->
+            <button onclick="navigateTo('portada')" class="flex items-center gap-2.5 group text-left focus:outline-none">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyber-purple to-cyber-cyan p-[2px] shadow-lg shadow-cyber-cyan/20 group-hover:scale-105 transition-transform">
+                    <div class="w-full h-full bg-cyber-bg rounded-[10px] flex items-center justify-center">
+                        <i class="fa-solid fa-brain text-cyber-cyan text-sm"></i>
+                    </div>
+                </div>
+                <div>
+                    <span class="font-display font-extrabold text-sm sm:text-base tracking-wider bg-gradient-to-r from-cyber-cyan via-white to-cyber-purple bg-clip-text text-transparent">
+                        K.E.D <span class="hidden md:inline">AI ACADEMY</span>
+                    </span>
+                    <span class="block text-[10px] text-slate-400 tracking-widest uppercase">Pensamiento Crítico & IA</span>
+                </div>
+            </button>
+
+            <!-- Navegación rápida -->
+            <nav class="flex items-center gap-1 sm:gap-2 bg-cyber-bg/70 p-1 rounded-xl border border-slate-700/60 overflow-x-auto max-w-full">
+                <button onclick="navigateTo('portada')" id="nav-portada" class="nav-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-house"></i><span class="hidden sm:inline">Portada</span>
+                </button>
+                <button onclick="navigateTo('aprende')" id="nav-aprende" class="nav-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-book-open-reader"></i><span class="hidden sm:inline">Aprende</span>
+                </button>
+                <button onclick="navigateTo('reglas')" id="nav-reglas" class="nav-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-scroll"></i><span class="hidden sm:inline">Reglas</span>
+                </button>
+                <button onclick="navigateTo('niveles')" id="nav-niveles" class="nav-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-gamepad"></i><span class="hidden sm:inline">Niveles</span>
+                </button>
+                <button onclick="navigateTo('resultados')" id="nav-resultados" class="nav-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-trophy"></i><span class="hidden sm:inline">Resultados</span>
+                </button>
+            </nav>
+
+            <!-- Estadísticas HUD: Puntos, Progreso, Insignias, Sonido -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Barra de progreso global -->
+                <div class="hidden lg:flex flex-col w-28">
+                    <div class="flex justify-between text-[10px] font-semibold text-slate-300 mb-0.5">
+                        <span>PROGRESO</span>
+                        <span id="hud-progress-text" class="text-cyber-cyan">0%</span>
+                    </div>
+                    <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                        <div id="hud-progress-bar" class="h-full bg-gradient-to-r from-cyber-purple via-cyber-cyan to-cyber-neonGreen transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Puntos -->
+                <div class="flex items-center gap-1.5 bg-cyber-card/90 border border-cyber-neonGreen/40 px-2.5 py-1 rounded-xl" title="Puntos acumulados">
+                    <i class="fa-solid fa-bolt text-cyber-neonGreen text-xs"></i>
+                    <span id="hud-score" class="font-display font-bold text-xs sm:text-sm text-cyber-neonGreen">0</span>
+                    <span class="text-[10px] text-slate-400 hidden sm:inline">PTS</span>
+                </div>
+
+                <!-- Insignias -->
+                <button onclick="navigateTo('resultados')" class="flex items-center gap-1.5 bg-cyber-card/90 border border-cyber-purple/40 px-2.5 py-1 rounded-xl hover:border-cyber-purple transition-colors" title="Ver insignias desbloqueadas">
+                    <i class="fa-solid fa-medal text-cyber-purple text-xs"></i>
+                    <span id="hud-badges" class="font-display font-bold text-xs sm:text-sm text-white">0/4</span>
+                </button>
+
+                <!-- Botón Sonido -->
+                <button onclick="toggleSound()" id="sound-toggle-btn" class="w-8 h-8 rounded-xl bg-cyber-card border border-slate-600/70 flex items-center justify-center text-cyber-cyan hover:border-cyber-cyan transition-colors" title="Activar/Silenciar efectos de sonido">
+                    <i id="sound-icon" class="fa-solid fa-volume-high text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+
+        <!-- ========================================================= -->
+        <!-- 1. PANTALLA: PORTADA                                      -->
+        <!-- ========================================================= -->
+        <section id="screen-portada" class="screen-section active">
+            <div class="cyber-glass rounded-3xl p-6 sm:p-10 md:p-12 border border-cyber-cyan/30 relative overflow-hidden">
+                <!-- Decoración esquinas -->
+                <div class="absolute top-0 left-0 w-24 h-24 border-t-2 border-l-2 border-cyber-cyan/50 rounded-tl-3xl pointer-events-none"></div>
+                <div class="absolute bottom-0 right-0 w-24 h-24 border-b-2 border-r-2 border-cyber-purple/50 rounded-br-3xl pointer-events-none"></div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    <!-- Columna izquierda: Texto y botones -->
+                    <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyber-purple/20 border border-cyber-purple/50 text-cyber-cyan text-xs font-semibold tracking-wider uppercase">
+                            <span class="w-2 h-2 rounded-full bg-cyber-neonGreen animate-ping"></span>
+                            Neurociencia del Aprendizaje + Pensamiento Crítico
+                        </div>
+
+                        <h1 class="font-display font-black text-3xl sm:text-5xl lg:text-6xl leading-tight tracking-tight">
+                            <span class="block text-white">APRENDE Y AVANZA</span>
+                            <span class="bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-neonGreen bg-clip-text text-transparent text-glow-cyan">
+                                CON K.E.D
+                            </span>
+                        </h1>
+
+                        <p class="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                            ¡Bienvenido a tu entrenamiento cerebral frente a la Inteligencia Artificial! En este videojuego interactivo pondrás a prueba tu mente para <strong class="text-cyber-cyan">detectar errores de la IA</strong>, <strong class="text-cyber-neonGreen">verificar hechos</strong>, <strong class="text-cyber-purple">resolver acertijos</strong> y tomar decisiones éticas observando sus consecuencias reales.
+                        </p>
+
+                        <!-- Píldoras de neurociencia -->
+                        <div class="grid grid-cols-3 gap-3 pt-1">
+                            <div class="bg-cyber-bg/75 border border-slate-700/80 rounded-2xl p-3 text-center">
+                                <i class="fa-solid fa-bolt-lightning text-cyber-cyan text-lg mb-1"></i>
+                                <div class="text-xs font-bold text-white">Práctica Activa</div>
+                                <div class="text-[11px] text-slate-400">24 Desafíos</div>
+                            </div>
+                            <div class="bg-cyber-bg/75 border border-slate-700/80 rounded-2xl p-3 text-center">
+                                <i class="fa-solid fa-code-branch text-cyber-purple text-lg mb-1"></i>
+                                <div class="text-xs font-bold text-white">Consecuencias</div>
+                                <div class="text-[11px] text-slate-400">Escenas Interactivas</div>
+                            </div>
+                            <div class="bg-cyber-bg/75 border border-slate-700/80 rounded-2xl p-3 text-center">
+                                <i class="fa-solid fa-shield-halved text-cyber-neonGreen text-lg mb-1"></i>
+                                <div class="text-xs font-bold text-white">4 Insignias</div>
+                                <div class="text-[11px] text-slate-400">Uso Responsable</div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+                            <button onclick="startAdventure()" class="btn-cyber w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-cyber-cyan to-cyber-purple text-cyber-bg font-display font-extrabold text-base tracking-wider shadow-lg shadow-cyber-cyan/30 hover:shadow-cyber-cyan/50 flex items-center justify-center gap-3">
+                                <i class="fa-solid fa-play"></i>
+                                COMENZAR AVENTURA
+                            </button>
+                            <button onclick="navigateTo('aprende')" class="btn-cyber w-full sm:w-auto px-6 py-4 rounded-2xl bg-cyber-card border border-cyber-cyan/50 text-white font-semibold text-sm hover:bg-cyber-cyan/10 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-graduation-cap text-cyber-cyan"></i>
+                                ZONA APRENDE
+                            </button>
+                            <button onclick="navigateTo('reglas')" class="btn-cyber w-full sm:w-auto px-5 py-4 rounded-2xl bg-cyber-bg/80 border border-slate-600 text-slate-200 font-semibold text-sm hover:border-cyber-purple flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-list-check text-cyber-purple"></i>
+                                REGLAS
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Columna derecha: Mascota Holográfica K.E.D -->
+                    <div class="lg:col-span-5 flex flex-col items-center justify-center">
+                        <div class="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
+                            <!-- Anillos orbitales animados -->
+                            <div class="absolute inset-2 rounded-full border-2 border-dashed border-cyber-cyan/40 animate-spin" style="animation-duration: 18s;"></div>
+                            <div class="absolute inset-6 rounded-full border border-cyber-purple/50 animate-pulse-ring"></div>
+                            <div class="absolute inset-8 rounded-full bg-gradient-to-b from-cyber-cyan/15 to-cyber-purple/20 blur-xl"></div>
+
+                            <!-- SVG del Robot K.E.D -->
+                            <svg viewBox="0 0 240 240" class="w-56 h-56 sm:w-64 sm:h-64 animate-float drop-shadow-[0_0_22px_rgba(56,189,248,0.45)]">
+                                <!-- Antena -->
+                                <line x1="120" y1="22" x2="120" y2="48" stroke="#38BDF8" stroke-width="4" stroke-linecap="round"/>
+                                <circle cx="120" cy="18" r="7" fill="#39FF14">
+                                    <animate attributeName="opacity" values="1;0.4;1" dur="1.8s" repeatCount="indefinite"/>
+                                </circle>
+                                <!-- Orejas / Sensores laterales -->
+                                <rect x="34" y="92" width="14" height="44" rx="7" fill="#A855F7" stroke="#38BDF8" stroke-width="2"/>
+                                <rect x="192" y="92" width="14" height="44" rx="7" fill="#A855F7" stroke="#38BDF8" stroke-width="2"/>
+                                <!-- Cabeza principal -->
+                                <rect x="48" y="48" width="144" height="122" rx="34" fill="#0D152C" stroke="url(#kedGrad)" stroke-width="5"/>
+                                <!-- Visor facial -->
+                                <rect x="64" y="68" width="112" height="68" rx="20" fill="#060B19" stroke="#38BDF8" stroke-width="2.5"/>
+                                <!-- Ojos digitales -->
+                                <g fill="#38BDF8">
+                                    <rect x="82" y="88" width="22" height="24" rx="11">
+                                        <animate attributeName="height" values="24;4;24" dur="4s" repeatCount="indefinite"/>
+                                    </rect>
+                                    <rect x="136" y="88" width="22" height="24" rx="11">
+                                        <animate attributeName="height" values="24;4;24" dur="4s" repeatCount="indefinite"/>
+                                    </rect>
+                                </g>
+                                <!-- Brillo ojos -->
+                                <circle cx="96" cy="94" r="3.5" fill="#FFFFFF"/>
+                                <circle cx="150" cy="94" r="3.5" fill="#FFFFFF"/>
+                                <!-- Boca / Ondas de voz -->
+                                <path d="M 98 122 Q 120 134 142 122" stroke="#39FF14" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                                <!-- Base / Cuello flotante -->
+                                <path d="M 88 180 L 152 180 L 140 198 L 100 198 Z" fill="#131F42" stroke="#A855F7" stroke-width="2.5"/>
+                                <ellipse cx="120" cy="212" rx="38" ry="6" fill="rgba(56, 189, 248, 0.35)">
+                                    <animate attributeName="rx" values="38;26;38" dur="3.6s" repeatCount="indefinite"/>
+                                </ellipse>
+                                <defs>
+                                    <linearGradient id="kedGrad" x1="0" y1="0" x2="240" y2="240" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#38BDF8"/>
+                                        <stop offset="50%" stop-color="#A855F7"/>
+                                        <stop offset="100%" stop-color="#39FF14"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+
+                        <!-- Burbuja de diálogo de K.E.D -->
+                        <div class="cyber-card rounded-2xl p-4 max-w-sm text-center border border-cyber-cyan/40 relative">
+                            <div class="text-xs font-display font-bold text-cyber-cyan uppercase tracking-wider mb-1">
+                                <i class="fa-solid fa-microchip mr-1"></i> K.E.D (Knowledge, Ethics & Discovery)
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-300">
+                                «¡Hola! Soy <strong class="text-white">K.E.D</strong>. Tu cerebro aprende mejor cuando cuestiona, investiga y corrige errores activamente. ¿Listo para entrenar?»
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 2. PANTALLA: APRENDE (NEUROCIENCIA E IA)                  -->
+        <!-- ========================================================= -->
+        <section id="screen-aprende" class="screen-section">
+            <div class="space-y-6">
+                <!-- Cabecera -->
+                <div class="cyber-glass rounded-3xl p-6 sm:p-8 border border-cyber-cyan/30 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs font-display font-bold text-cyber-cyan uppercase tracking-widest">Módulo de Preparación Cerebral</span>
+                        <h2 class="font-display font-extrabold text-2xl sm:text-4xl text-white mt-1">
+                            Comprendiendo la Inteligencia Artificial
+                        </h2>
+                        <p class="text-slate-300 text-sm sm:text-base mt-2 max-w-2xl">
+                            Antes de enfrentar los desafíos, activa tus redes neuronales comprendiendo cómo funciona la IA, sus ventajas, sus peligros y por qué comete errores.
+                        </p>
+                    </div>
+                    <div class="bg-cyber-purple/20 border border-cyber-purple/50 rounded-2xl p-4 max-w-xs">
+                        <div class="flex items-center gap-2 text-cyber-purple font-bold text-xs uppercase mb-1">
+                            <i class="fa-solid fa-brain"></i> Dato de Neurociencia
+                        </div>
+                        <p class="text-xs text-slate-200 leading-relaxed">
+                            Cuando lees pasivamente, retienes poco. Cuando <strong>analizas errores y explicas con tus palabras</strong>, fortaleces la sinapsis en tu corteza prefrontal.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 4 Pilares de la IA -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Tarjeta 1: ¿Qué es la IA? -->
+                    <div class="cyber-card rounded-2xl p-6 border-l-4 border-l-cyber-cyan">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-cyber-cyan/20 flex items-center justify-center text-cyber-cyan">
+                                <i class="fa-solid fa-robot text-lg"></i>
+                            </div>
+                            <h3 class="font-display font-bold text-lg text-white">1. ¿Qué es la IA Generativa?</h3>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Es una tecnología entrenada con millones de datos para reconocer patrones y predecir palabras, imágenes o respuestas. <strong class="text-cyber-cyan">No tiene conciencia ni comprende la verdad como un humano</strong>; calcula qué palabra es más probable que siga a otra.
+                        </p>
+                    </div>
+
+                    <!-- Tarjeta 2: Beneficios -->
+                    <div class="cyber-card rounded-2xl p-6 border-l-4 border-l-cyber-neonGreen">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-cyber-neonGreen/20 flex items-center justify-center text-cyber-neonGreen">
+                                <i class="fa-solid fa-rocket text-lg"></i>
+                            </div>
+                            <h3 class="font-display font-bold text-lg text-white">2. Beneficios como Herramienta</h3>
+                        </div>
+                        <ul class="text-sm text-slate-300 space-y-1.5">
+                            <li><i class="fa-solid fa-check text-cyber-neonGreen mr-2"></i>Explica conceptos difíciles con ejemplos sencillos.</li>
+                            <li><i class="fa-solid fa-check text-cyber-neonGreen mr-2"></i>Ayuda a organizar ideas, resúmenes y esquemas de estudio.</li>
+                            <li><i class="fa-solid fa-check text-cyber-neonGreen mr-2"></i>Inspira la creatividad y permite practicar idiomas o programación.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Tarjeta 3: Riesgos -->
+                    <div class="cyber-card rounded-2xl p-6 border-l-4 border-l-cyber-danger">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-cyber-danger/20 flex items-center justify-center text-cyber-danger">
+                                <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                            </div>
+                            <h3 class="font-display font-bold text-lg text-white">3. Riesgos y Limitaciones</h3>
+                        </div>
+                        <ul class="text-sm text-slate-300 space-y-1.5">
+                            <li><strong class="text-cyber-danger">Alucinaciones:</strong> Inventa datos, fechas o autores con total seguridad.</li>
+                            <li><strong class="text-cyber-danger">Sesgos y Desinformación:</strong> Puede repetir prejuicios o noticias falsas.</li>
+                            <li><strong class="text-cyber-danger">Privacidad y Pereza Mental:</strong> Expone tus datos y debilita tu pensamiento crítico si copias sin pensar.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Tarjeta 4: Uso Responsable -->
+                    <div class="cyber-card rounded-2xl p-6 border-l-4 border-l-cyber-purple">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-cyber-purple/20 flex items-center justify-center text-cyber-purple">
+                                <i class="fa-solid fa-user-shield text-lg"></i>
+                            </div>
+                            <h3 class="font-display font-bold text-lg text-white">4. Claves del Uso Responsable</h3>
+                        </div>
+                        <ul class="text-sm text-slate-300 space-y-1.5">
+                            <li><i class="fa-solid fa-shield text-cyber-purple mr-2"></i>Verifica siempre en fuentes confiables (libros, ciencia, sitios oficiales).</li>
+                            <li><i class="fa-solid fa-shield text-cyber-purple mr-2"></i>Nunca compartas contraseñas, dirección ni fotos privadas.</li>
+                            <li><i class="fa-solid fa-shield text-cyber-purple mr-2"></i>Usa la IA como copiloto, pero escribe y decide con tu propio cerebro.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Laboratorio Interactivo de Errores de la IA -->
+                <div class="cyber-glass rounded-3xl p-6 sm:p-8 border border-cyber-purple/40">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
+                        <div>
+                            <h3 class="font-display font-bold text-xl text-white flex items-center gap-2">
+                                <i class="fa-solid fa-microscope text-cyber-cyan"></i>
+                                Laboratorio: ¿Cómo comete errores la IA?
+                            </h3>
+                            <p class="text-xs sm:text-sm text-slate-400">Haz clic en cada ejemplo para inspeccionar el fallo oculto de la IA.</p>
+                        </div>
+                        <span class="text-xs px-3 py-1 rounded-full bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/30 self-start">
+                            3 Casos Reales
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Ejemplo 1 -->
+                        <div class="bg-cyber-bg/90 rounded-2xl p-5 border border-slate-700 flex flex-col justify-between">
+                            <div>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-cyber-purple">Caso A: Alucinación Histórica</span>
+                                <div class="mt-2 p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-300 italic">
+                                    «IA dice: Cristóbal Colón llegó a América en 1492 utilizando un submarino de vapor diseñado por Leonardo da Vinci.»
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button onclick="toggleLabReveal('lab-1', this)" class="btn-cyber w-full py-2.5 px-4 rounded-xl bg-cyber-cyan/20 border border-cyber-cyan/50 text-cyber-cyan text-xs font-bold hover:bg-cyber-cyan hover:text-cyber-bg">
+                                    <i class="fa-solid fa-magnifying-glass mr-1"></i> Detectar Error
+                                </button>
+                                <div id="lab-1" class="hidden mt-3 p-3 rounded-xl bg-cyber-danger/15 border border-cyber-danger/40 text-xs text-slate-200">
+                                    <strong class="text-cyber-danger block mb-1">¡Error detectado!</strong>
+                                    En 1492 no existían submarinos de vapor; Colón viajó en carabelas (La Niña, La Pinta y La Santa María). La IA mezcló conceptos históricos sin lógica.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ejemplo 2 -->
+                        <div class="bg-cyber-bg/90 rounded-2xl p-5 border border-slate-700 flex flex-col justify-between">
+                            <div>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-cyber-purple">Caso B: Error Científico</span>
+                                <div class="mt-2 p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-300 italic">
+                                    «IA dice: Las plantas realizan la fotosíntesis absorbiendo oxígeno y expulsando grandes cantidades de plástico líquido.»
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button onclick="toggleLabReveal('lab-2', this)" class="btn-cyber w-full py-2.5 px-4 rounded-xl bg-cyber-cyan/20 border border-cyber-cyan/50 text-cyber-cyan text-xs font-bold hover:bg-cyber-cyan hover:text-cyber-bg">
+                                    <i class="fa-solid fa-magnifying-glass mr-1"></i> Detectar Error
+                                </button>
+                                <div id="lab-2" class="hidden mt-3 p-3 rounded-xl bg-cyber-danger/15 border border-cyber-danger/40 text-xs text-slate-200">
+                                    <strong class="text-cyber-danger block mb-1">¡Error detectado!</strong>
+                                    Las plantas absorben dióxido de carbono (CO₂) y liberan oxígeno (O₂), nunca plástico. Siempre contrasta datos científicos.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ejemplo 3 -->
+                        <div class="bg-cyber-bg/90 rounded-2xl p-5 border border-slate-700 flex flex-col justify-between">
+                            <div>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-cyber-purple">Caso C: Cita Inventada</span>
+                                <div class="mt-2 p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-300 italic">
+                                    «IA dice: Según el libro "Secretos de Marte" escrito por Albert Einstein en 2015, existen ciudades subterráneas.»
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button onclick="toggleLabReveal('lab-3', this)" class="btn-cyber w-full py-2.5 px-4 rounded-xl bg-cyber-cyan/20 border border-cyber-cyan/50 text-cyber-cyan text-xs font-bold hover:bg-cyber-cyan hover:text-cyber-bg">
+                                    <i class="fa-solid fa-magnifying-glass mr-1"></i> Detectar Error
+                                </button>
+                                <div id="lab-3" class="hidden mt-3 p-3 rounded-xl bg-cyber-danger/15 border border-cyber-danger/40 text-xs text-slate-200">
+                                    <strong class="text-cyber-danger block mb-1">¡Error detectado!</strong>
+                                    Albert Einstein falleció en 1955 y nunca escribió ese libro. La IA suele inventar referencias bibliográficas falsas.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navegación inferior -->
+                <div class="flex flex-wrap items-center justify-between gap-4 pt-2">
+                    <button onclick="navigateTo('portada')" class="btn-cyber px-6 py-3 rounded-xl bg-cyber-card border border-slate-600 text-slate-200 font-semibold text-sm hover:border-cyber-cyan flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Volver a Portada
+                    </button>
+                    <button onclick="navigateTo('reglas')" class="btn-cyber px-7 py-3.5 rounded-xl bg-gradient-to-r from-cyber-purple to-cyber-cyan text-cyber-bg font-display font-bold text-sm tracking-wide flex items-center gap-2 shadow-lg shadow-cyber-cyan/25">
+                        Continuar a las Reglas <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 3. PANTALLA: REGLAS DEL VIDEOJUEGO                        -->
+        <!-- ========================================================= -->
+        <section id="screen-reglas" class="screen-section">
+            <div class="cyber-glass rounded-3xl p-6 sm:p-10 border border-cyber-purple/35 space-y-8">
+                <div class="text-center max-w-2xl mx-auto">
+                    <span class="text-xs font-display font-bold text-cyber-neonGreen uppercase tracking-widest">Protocolo de Misión</span>
+                    <h2 class="font-display font-extrabold text-2xl sm:text-4xl text-white mt-1">
+                        Reglas del Videojuego
+                    </h2>
+                    <p class="text-slate-300 text-sm sm:text-base mt-2">
+                        Sigue estas 6 reglas fundamentales para superar los 4 niveles, ganar insignias y convertirte en un experto en el uso ético de la IA.
+                    </p>
+                </div>
+
+                <!-- Grid de las 6 reglas solicitadas -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div class="cyber-card rounded-2xl p-5 flex items-start gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-cyber-cyan/20 border border-cyber-cyan/50 flex items-center justify-center text-cyber-cyan font-display font-bold shrink-0">
+                            01
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-base mb-1">Leer atentamente las respuestas de la IA</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed">No te dejes engañar por un tono seguro o elegante; analiza cada frase con atención.</p>
+                        </div>
+                    </div>
+
+                    <div class="cyber-card rounded-2xl p-5 flex items-start gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-cyber-purple/20 border border-cyber-purple/50 flex items-center justify-center text-cyber-purple font-display font-bold shrink-0">
+                            02
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-base mb-1">Identificar posibles errores</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed">Busca incoherencias, datos inventados (alucinaciones) o fallos de lógica.</p>
+                        </div>
+                    </div>
+
+                    <div class="cyber-card rounded-2xl p-5 flex items-start gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-cyber-neonGreen/20 border border-cyber-neonGreen/50 flex items-center justify-center text-cyber-neonGreen font-display font-bold shrink-0">
+                            03
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-base mb-1">Comprobar si la información es verdadera</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed">Contrasta los hechos con conocimientos científicos, históricos y fuentes confiables.</p>
+                        </div>
+                    </div>
+
+                    <div class="cyber-card rounded-2xl p-5 flex items-start gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-cyber-cyan/20 border border-cyber-cyan/50 flex items-center justify-center text-cyber-cyan font-display font-bold shrink-0">
+                            04
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-base mb-1">Resolver acertijos y desafíos</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed">Supera enigmas lógicos y escenarios interactivos donde tus decisiones tienen consecuencias.</p>
+                        </div>
+                    </div>
+
+                    <div class="cyber-card rounded-2xl p-5 flex items-start gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-cyber-purple/20 border border-cyber-purple/50 flex items-center justify-center text-cyber-purple font-display font-bold shrink-0">
+                            05
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-base mb-1">Corregir con conocimientos propios</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed">Reescribe respuestas erróneas usando tus propias palabras para consolidar tu aprendizaje.</p>
+                        </div>
+                    </div>
+
+                    <div class="cyber-card rounded-2xl p-5 flex items-start gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-cyber-neonGreen/20 border border-cyber-neonGreen/50 flex items-center justify-center text-cyber-neonGreen font-display font-bold shrink-0">
+                            06
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-base mb-1">Acumular puntos para avanzar</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed">Cada reto superado suma puntos (+100 pts) y desbloquea las 4 insignias de maestro.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aviso sobre escenarios interactivos -->
+                <div class="bg-gradient-to-r from-cyber-purple/20 via-cyber-card to-cyber-cyan/20 border border-cyber-cyan/40 rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-cyber-bg border border-cyber-neonGreen flex items-center justify-center text-cyber-neonGreen text-xl shrink-0">
+                        <i class="fa-solid fa-code-fork"></i>
+                    </div>
+                    <div class="text-center sm:text-left">
+                        <h4 class="font-display font-bold text-sm sm:text-base text-white">¡Atención a los Escenarios de Consecuencias Interactivas!</h4>
+                        <p class="text-xs sm:text-sm text-slate-300 mt-1">
+                            En cada nivel encontrarás situaciones reales (noticias falsas, datos privados, tareas escolares). Si tomas una decisión riesgosa, verás una animación de sus consecuencias y podrás <strong class="text-cyber-cyan">volver a intentarlo</strong> para elegir el camino responsable.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Botones -->
+                <div class="flex flex-wrap items-center justify-between gap-4 pt-2">
+                    <button onclick="navigateTo('aprende')" class="btn-cyber px-6 py-3 rounded-xl bg-cyber-card border border-slate-600 text-slate-200 font-semibold text-sm hover:border-cyber-cyan flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Regresar a Aprende
+                    </button>
+                    <button onclick="navigateTo('niveles')" class="btn-cyber px-8 py-3.5 rounded-xl bg-gradient-to-r from-cyber-neonGreen to-cyber-cyan text-cyber-bg font-display font-extrabold text-sm tracking-wider flex items-center gap-2 shadow-lg shadow-cyber-neonGreen/25">
+                        <i class="fa-solid fa-gamepad"></i> IR AL MAPA DE NIVELES
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 4. PANTALLA: SELECTOR DE NIVELES                          -->
+        <!-- ========================================================= -->
+        <section id="screen-niveles" class="screen-section">
+            <div class="space-y-6">
+                <div class="cyber-glass rounded-3xl p-6 sm:p-8 border border-cyber-cyan/30 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs font-display font-bold text-cyber-cyan uppercase tracking-widest">Mapa de Entrenamiento</span>
+                        <h2 class="font-display font-extrabold text-2xl sm:text-3xl text-white mt-1">
+                            Selecciona un Nivel de Desafío
+                        </h2>
+                        <p class="text-slate-300 text-sm mt-1">
+                            Cada nivel contiene <strong class="text-cyber-neonGreen">6 actividades</strong> (acertijos, preguntas, corrección escrita y escenarios con consecuencias).
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="navigateTo('reglas')" class="px-4 py-2.5 rounded-xl bg-cyber-card border border-slate-600 text-xs font-semibold text-slate-200 hover:border-cyber-cyan">
+                            <i class="fa-solid fa-scroll mr-1"></i> Ver Reglas
+                        </button>
+                        <button onclick="navigateTo('resultados')" class="px-4 py-2.5 rounded-xl bg-cyber-purple/25 border border-cyber-purple text-xs font-semibold text-white hover:bg-cyber-purple/40">
+                            <i class="fa-solid fa-trophy mr-1"></i> Ver Resultados
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Grid de los 4 niveles -->
+                <div id="levels-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Se renderiza dinámicamente con JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 5. PANTALLA: ARENA DE JUEGO (ACTIVIDADES Y ESCENARIOS)    -->
+        <!-- ========================================================= -->
+        <section id="screen-juego" class="screen-section">
+            <div class="space-y-5">
+                <!-- Barra superior del nivel activo -->
+                <div class="cyber-glass rounded-2xl p-4 border border-cyber-cyan/30 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <button onclick="navigateTo('niveles')" class="px-3.5 py-2 rounded-xl bg-cyber-card border border-slate-600 text-xs font-semibold text-slate-200 hover:border-cyber-cyan flex items-center gap-1.5">
+                            <i class="fa-solid fa-map"></i> Niveles
+                        </button>
+                        <div>
+                            <span id="game-level-badge" class="text-[11px] font-display font-bold text-cyber-cyan uppercase tracking-wider">NIVEL 1</span>
+                            <h3 id="game-level-title" class="font-display font-bold text-sm sm:text-base text-white">Identifica los errores de la IA</h3>
+                        </div>
+                    </div>
+
+                    <!-- Indicadores de las 6 actividades del nivel -->
+                    <div class="flex items-center gap-1.5" id="activity-dots">
+                        <!-- 6 puntos generados por JS -->
+                    </div>
+
+                    <div class="text-xs font-semibold text-slate-300">
+                        Actividad <span id="game-activity-num" class="text-cyber-neonGreen font-display font-bold">1</span> de 6
+                    </div>
+                </div>
+
+                <!-- Contenedor Principal de la Actividad o Escenario -->
+                <div id="activity-container" class="cyber-glass rounded-3xl p-6 sm:p-8 border border-cyber-purple/35 relative overflow-hidden">
+                    <!-- Se inyecta dinámicamente según el tipo de actividad -->
+                </div>
+
+                <!-- Navegación rápida entre actividades del nivel -->
+                <div class="flex items-center justify-between">
+                    <button id="btn-prev-activity" onclick="prevActivity()" class="btn-cyber px-5 py-2.5 rounded-xl bg-cyber-card border border-slate-600 text-xs sm:text-sm font-semibold text-slate-300 hover:border-cyber-cyan flex items-center gap-2">
+                        <i class="fa-solid fa-chevron-left"></i> Anterior
+                    </button>
+                    <button id="btn-retry-activity" onclick="retryCurrentActivity()" class="btn-cyber px-5 py-2.5 rounded-xl bg-cyber-bg border border-cyber-purple/50 text-xs sm:text-sm font-semibold text-cyber-purple hover:bg-cyber-purple/15 flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i> Reiniciar Desafío
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 6. PANTALLA: GAME OVER Y RECOMENDACIONES FINALES          -->
+        <!-- ========================================================= -->
+        <section id="screen-resultados" class="screen-section">
+            <div class="space-y-6">
+                <div class="cyber-glass rounded-3xl p-6 sm:p-10 border border-cyber-neonGreen/40 text-center relative overflow-hidden">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyber-neonGreen/15 border border-cyber-neonGreen/40 text-cyber-neonGreen text-xs font-display font-bold uppercase tracking-widest mb-3">
+                        <i class="fa-solid fa-flag-checkered"></i> Informe de Rendimiento Neuronal
+                    </div>
+
+                    <h2 id="final-status-title" class="font-display font-black text-3xl sm:text-5xl text-white">
+                        ¡Misión Evaluada!
+                    </h2>
+                    <p id="final-status-subtitle" class="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto mt-2">
+                        Aquí tienes el resumen de tu progreso, los puntos acumulados y las insignias obtenidas en tu entrenamiento con K.E.D.
+                    </p>
+
+                    <!-- Métricas principales -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mt-7">
+                        <div class="cyber-card rounded-2xl p-5 border border-cyber-neonGreen/40">
+                            <div class="text-xs text-slate-400 uppercase font-semibold">Puntuación Total</div>
+                            <div id="final-score" class="font-display font-black text-3xl sm:text-4xl text-cyber-neonGreen text-glow-green mt-1">0</div>
+                            <div class="text-[11px] text-slate-400 mt-1">de 2,400 puntos posibles</div>
+                        </div>
+
+                        <div class="cyber-card rounded-2xl p-5 border border-cyber-cyan/40">
+                            <div class="text-xs text-slate-400 uppercase font-semibold">Desafíos Completados</div>
+                            <div id="final-completed" class="font-display font-black text-3xl sm:text-4xl text-cyber-cyan text-glow-cyan mt-1">0/24</div>
+                            <div id="final-percent" class="text-[11px] text-slate-400 mt-1">0% de avance global</div>
+                        </div>
+
+                        <div class="cyber-card rounded-2xl p-5 border border-cyber-purple/40">
+                            <div class="text-xs text-slate-400 uppercase font-semibold">Insignias Ganadas</div>
+                            <div id="final-badges-count" class="font-display font-black text-3xl sm:text-4xl text-cyber-purple text-glow-purple mt-1">0/4</div>
+                            <div class="text-[11px] text-slate-400 mt-1">Rango de pensamiento crítico</div>
+                        </div>
+                    </div>
+
+                    <!-- Galería de Insignias -->
+                    <div class="mt-8">
+                        <h3 class="font-display font-bold text-lg text-white mb-4">Tus Insignias de Uso Responsable</h3>
+                        <div id="final-badges-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                            <!-- Se llena con JS -->
+                        </div>
+                    </div>
+
+                    <!-- Mensaje Final Obligatorio Destacado -->
+                    <div class="mt-8 max-w-3xl mx-auto p-6 rounded-2xl bg-gradient-to-r from-cyber-purple/25 via-cyber-bg to-cyber-cyan/25 border-2 border-cyber-cyan shadow-[0_0_25px_rgba(56,189,248,0.25)]">
+                        <i class="fa-solid fa-quote-left text-cyber-cyan text-xl mb-2 block"></i>
+                        <p class="font-display font-bold text-base sm:text-xl text-white leading-relaxed">
+                            «La inteligencia artificial puede ayudarnos a aprender, pero debemos pensar, investigar y comprobar la información antes de confiar en sus respuestas».
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Recomendaciones para utilizar correctamente la IA -->
+                <div class="cyber-glass rounded-3xl p-6 sm:p-8 border border-cyber-purple/35">
+                    <h3 class="font-display font-bold text-xl text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-cyber-neonGreen"></i>
+                        Recomendaciones Clave para Usar Correctamente la IA
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-cyber-bg/80 p-4 rounded-2xl border border-slate-700 flex items-start gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-cyber-cyan/20 text-cyber-cyan flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-check-double"></i></span>
+                            <div>
+                                <h4 class="font-bold text-sm text-white">1. Aplica la Regla de Doble Verificación</h4>
+                                <p class="text-xs text-slate-400 mt-1">Confirma fechas, fórmulas y noticias generadas por IA en enciclopedias, libros escolares o medios reconocidos.</p>
+                            </div>
+                        </div>
+                        <div class="bg-cyber-bg/80 p-4 rounded-2xl border border-slate-700 flex items-start gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-cyber-purple/20 text-cyber-purple flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-brain"></i></span>
+                            <div>
+                                <h4 class="font-bold text-sm text-white">2. Piensa Primero, Pregunta Después</h4>
+                                <p class="text-xs text-slate-400 mt-1">Intenta resolver tus tareas por ti mismo antes de pedir pistas a la IA. Tu cerebro crece cuando se esfuerza.</p>
+                            </div>
+                        </div>
+                        <div class="bg-cyber-bg/80 p-4 rounded-2xl border border-slate-700 flex items-start gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-cyber-neonGreen/20 text-cyber-neonGreen flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-lock"></i></span>
+                            <div>
+                                <h4 class="font-bold text-sm text-white">3. Blindaje de Privacidad Digital</h4>
+                                <p class="text-xs text-slate-400 mt-1">Jamás ingreses tu nombre completo, dirección, teléfono, contraseñas o fotos personales en chats de IA.</p>
+                            </div>
+                        </div>
+                        <div class="bg-cyber-bg/80 p-4 rounded-2xl border border-slate-700 flex items-start gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-cyber-warning/20 text-cyber-warning flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-pen-nib"></i></span>
+                            <div>
+                                <h4 class="font-bold text-sm text-white">4. Crea con Tu Propia Voz</h4>
+                                <p class="text-xs text-slate-400 mt-1">Usa las respuestas de la IA como inspiración, pero redacta tus trabajos con tus propias palabras y criterio.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones finales -->
+                    <div class="flex flex-wrap items-center justify-center gap-4 mt-7">
+                        <button onclick="navigateTo('niveles')" class="btn-cyber px-6 py-3.5 rounded-xl bg-cyber-card border border-cyber-cyan text-white font-semibold text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-map text-cyber-cyan"></i> Volver a los Niveles
+                        </button>
+                        <button onclick="resetFullGame()" class="btn-cyber px-6 py-3.5 rounded-xl bg-gradient-to-r from-cyber-purple to-cyber-cyan text-cyber-bg font-display font-bold text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-rotate"></i> Reiniciar Todo el Juego
+                        </button>
+                        <button onclick="navigateTo('portada')" class="btn-cyber px-6 py-3.5 rounded-xl bg-cyber-bg border border-slate-600 text-slate-300 font-semibold text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-house"></i> Ir a la Portada
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================================= -->
+    <!-- SCRIPT PRINCIPAL: DATOS, MOTOR DE JUEGO, SONIDO Y CANVAS  -->
+    <!-- ========================================================= -->
+    <script>
+        /* ===========================================================
+           1. SISTEMA DE AUDIO SINTETIZADO (WEB AUDIO API)
+           =========================================================== */
+        const AudioFX = {
+            ctx: null,
+            enabled: true,
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) this.ctx = new AudioContext();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            playTone(freq, type, duration, delay = 0, vol = 0.12) {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + delay);
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + delay + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + delay);
+                    osc.stop(this.ctx.currentTime + delay + duration);
+                } catch (e) {}
+            },
+            click() {
+                this.playTone(620, 'sine', 0.08, 0, 0.08);
+            },
+            success() {
+                this.playTone(523.25, 'triangle', 0.14, 0, 0.14);
+                this.playTone(659.25, 'triangle', 0.14, 0.1, 0.14);
+                this.playTone(783.99, 'triangle', 0.25, 0.2, 0.16);
+            },
+            error() {
+                this.playTone(220, 'sawtooth', 0.18, 0, 0.12);
+                this.playTone(165, 'sawtooth', 0.28, 0.14, 0.14);
+            },
+            badge() {
+                this.playTone(587.33, 'sine', 0.12, 0, 0.15);
+                this.playTone(783.99, 'sine', 0.12, 0.1, 0.15);
+                this.playTone(987.77, 'sine', 0.14, 0.2, 0.15);
+                this.playTone(1174.66, 'triangle', 0.35, 0.3, 0.18);
+            }
+        };
+
+        function toggleSound() {
+            AudioFX.enabled = !AudioFX.enabled;
+            const icon = document.getElementById('sound-icon');
+            const btn = document.getElementById('sound-toggle-btn');
+            if (AudioFX.enabled) {
+                icon.className = 'fa-solid fa-volume-high text-xs';
+                btn.classList.add('text-cyber-cyan');
+                btn.classList.remove('text-slate-500');
+                AudioFX.click();
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-xs';
+                btn.classList.remove('text-cyber-cyan');
+                btn.classList.add('text-slate-500');
+            }
+        }
+
+        /* ===========================================================
+           2. FONDO ANIMADO DE RED NEURONAL EN CANVAS
+           =========================================================== */
+        function initNeuralBackground() {
+            const canvas = document.getElementById('neural-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height, particles;
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                const count = Math.min(Math.floor((width * height) / 22000), 55);
+                particles = [];
+                const colors = ['#38BDF8', '#A855F7', '#39FF14'];
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        vx: (Math.random() - 0.5) * 0.45,
+                        vy: (Math.random() - 0.5) * 0.45,
+                        r: Math.random() * 2 + 1.2,
+                        color: colors[i % colors.length]
+                    });
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, width, height);
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < 0 || p.x > width) p.vx *= -1;
+                    if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = 0.55;
+                    ctx.fill();
+
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const p2 = particles[j];
+                        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                        if (dist < 135) {
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.strokeStyle = '#38BDF8';
+                            ctx.globalAlpha = (1 - dist / 135) * 0.16;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(draw);
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+            draw();
+        }
+
+        /* ===========================================================
+           3. BASE DE DATOS DEL VIDEOJUEGO (4 NIVELES x 6 ACTIVIDADES)
+           =========================================================== */
+        const GAME_LEVELS = [
+            {
+                id: 1,
+                title: "Nivel 1: Identifica los errores de la IA",
+                shortTitle: "Detector de Errores",
+                description: "Analiza respuestas generadas por la IA, detecta alucinaciones y corrige los fallos utilizando tu propio razonamiento.",
+                badgeName: "Detector de Alucinaciones",
+                badgeIcon: "fa-eye",
+                color: "cyan",
+                activities: [
+                    {
+                        type: "choice",
+                        tag: "Detección de Error Científico",
+                        aiPrompt: "«El Sol es un planeta gigante hecho de lava líquida que gira alrededor de la Tierra cada 24 horas.»",
+                        question: "¿Cuál es el error principal en esta respuesta generada por la IA?",
+                        options: [
+                            "El Sol es una estrella (no un planeta) y la Tierra es la que gira alrededor del Sol.",
+                            "El Sol tarda 48 horas en girar alrededor de la Tierra.",
+                            "La respuesta de la IA es completamente correcta."
+                        ],
+                        correctIndex: 0,
+                        neuroTip: "¡Excelente! Detectar contradicciones activa tu memoria semántica y evita que aceptes conceptos erróneos."
+                    },
+                    {
+                        type: "riddle",
+                        tag: "Acertijo Neuronal #1",
+                        aiPrompt: "«Soy una respuesta de la IA que suena muy convincente y elegante, pero mis datos y citas son totalmente inventados. ¿Qué soy?»",
+                        question: "Resuelve el acertijo sobre el comportamiento de la IA:",
+                        options: [
+                            "Una actualización de software",
+                            "Una alucinación de la IA",
+                            "Un antivirus inteligente"
+                        ],
+                        correctIndex: 1,
+                        neuroTip: "Cuando la IA inventa hechos con seguridad se llama 'alucinación'. ¡Nunca te dejes llevar solo por su tono seguro!"
+                    },
+                    {
+                        type: "choice",
+                        tag: "Error Histórico",
+                        aiPrompt: "«En el año 1969, los astronautas del Apolo 11 enviaron sus primeras fotos desde la Luna usando la red Wi-Fi espacial.»",
+                        question: "¿Qué falla en la afirmación de la IA?",
+                        options: [
+                            "El Apolo 11 nunca viajó al espacio.",
+                            "El Wi-Fi no existía en 1969; las señales se transmitieron por ondas de radio.",
+                            "Los astronautas llegaron a Marte en 1969."
+                        ],
+                        correctIndex: 1,
+                        neuroTip: "¡Buen ojo crítico! La IA a veces mezcla tecnología moderna con eventos históricos antiguos."
+                    },
+                    {
+                        type: "rewrite",
+                        tag: "Corrige con tus Propias Palabras",
+                        aiPrompt: "«Respuesta errónea de la IA: Los peces respiran bajo el agua gracias a que tienen pulmones gigantes llenos de aire.»",
+                        question: "Escribe con tus propias palabras la corrección científica (explica cómo respiran realmente los peces):",
+                        placeholder: "Ejemplo: Los peces no tienen pulmones, respiran bajo el agua usando sus branquias...",
+                        keywords: ["branquias", "agallas", "oxigeno", "agua", "no tienen pulmones"],
+                        minKeywords: 1,
+                        modelAnswer: "Los peces no tienen pulmones; respiran bajo el agua utilizando sus branquias (o agallas) para absorber el oxígeno disuelto en el agua.",
+                        neuroTip: "Escribir la corrección con tus propias palabras consolida el aprendizaje mucho más que solo leer la respuesta."
+                    },
+                    {
+                        type: "choice",
+                        tag: "Lógica y Matemáticas en la IA",
+                        aiPrompt: "«Si tienes 3 manzanas y te comes 2, pero luego compras 4 más, en total te quedan 9 manzanas.»",
+                        question: "¿Dónde está el error de cálculo de la IA?",
+                        options: [
+                            "3 - 2 + 4 es igual a 5 manzanas, no 9.",
+                            "3 - 2 + 4 es igual a 1 manzana.",
+                            "La IA calculó correctamente."
+                        ],
+                        correctIndex: 0,
+                        neuroTip: "Los modelos de lenguaje predicen texto, por eso a veces fallan en operaciones matemáticas simples. ¡Comprueba siempre los números!"
+                    },
+                    {
+                        type: "scenario",
+                        tag: "Situación Interactiva: Informe de Ciencias",
+                        title: "El Resumen con Datos Inventados",
+                        context: "Estás preparando una exposición de ciencias sobre los volcanes. Le pides un resumen a una IA y te entrega un texto muy bien escrito, pero menciona un 'volcán submarino en medio del desierto del Sahara activo ayer'. Debes entregar tu trabajo en 10 minutos.",
+                        optionA: {
+                            label: "Opción A: Copiar el texto tal cual porque suena muy profesional",
+                            sceneIcon: "fa-triangle-exclamation",
+                            sceneTitle: "¡Alucinación Detectada en Plena Exposición!",
+                            sceneAnimationType: "error-virus",
+                            consequenceText: "Al leer tu trabajo frente a la clase, todos notan el absurdo de un 'volcán submarino en el desierto'. Tu credibilidad disminuye por confiar ciegamente sin revisar.",
+                            reflection: "Neuro-Reflexión: El cerebro tiende a ahorrar energía aceptando textos bien redactados (sesgo de fluidez). Siempre debes leer y filtrar críticamente lo que produce la IA."
+                        },
+                        optionB: {
+                            label: "Opción B: Revisar el texto, eliminar el dato absurdo y corregirlo",
+                            sceneIcon: "fa-shield-check",
+                            sceneTitle: "¡Pensamiento Crítico Activado!",
+                            sceneAnimationType: "success-shield",
+                            consequenceText: "Detectaste la alucinación de la IA a tiempo, verificaste los datos reales sobre volcanes y realizaste una presentación impecable y veraz.",
+                            reflection: "Neuro-Reflexión: Al cuestionar y corregir el error, fortaleciste tus conexiones neuronales y demostraste control sobre la herramienta."
+                        }
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "Nivel 2: Comprueba si la información es verdadera o falsa",
+                shortTitle: "Verificador de Verdad",
+                description: "Pon a prueba tus habilidades de verificación de hechos (fact-checking) y enfrenta el escenario de noticias falsas.",
+                badgeName: "Verificador de la Verdad",
+                badgeIcon: "fa-check-double",
+                color: "purple",
+                activities: [
+                    {
+                        type: "tf",
+                        tag: "Verdadero o Falso #1",
+                        aiPrompt: "«Afirmación de la IA: Todo lo que responde una inteligencia artificial proviene siempre de artículos científicos verificados en tiempo real.»",
+                        question: "¿Esta afirmación es Verdadera o Falsa?",
+                        correctBool: false,
+                        neuroTip: "¡Falso! La IA se entrena con textos variados de internet, que incluyen opiniones, ficción y errores."
+                    },
+                    {
+                        type: "tf",
+                        tag: "Verdadero o Falso #2",
+                        aiPrompt: "«Afirmación de la IA: El agua hierve a 100 grados Celsius (212 °F) a nivel del mar en condiciones normales.»",
+                        question: "¿Esta afirmación es Verdadera o Falsa?",
+                        correctBool: true,
+                        neuroTip: "¡Verdadero! Cuando la IA acierta, nuestra tarea es confirmar ese dato con conocimiento científico comprobado."
+                    },
+                    {
+                        type: "riddle",
+                        tag: "Acertijo Neuronal #2",
+                        aiPrompt: "«No tengo boca, pero cuento noticias; me propagan con un clic sin mirar mis raíces. Si me investigas en libros o sitios oficiales, desaparezco al instante. ¿Qué soy?»",
+                        question: "Adivina qué fenómeno digital describe este acertijo:",
+                        options: [
+                            "Una noticia falsa (Fake News)",
+                            "Una base de datos académica",
+                            "Un diccionario digital"
+                        ],
+                        correctIndex: 0,
+                        neuroTip: "Las noticias falsas apelan a las emociones rápidas para evitar que tu corteza prefrontal analice los hechos."
+                    },
+                    {
+                        type: "choice",
+                        tag: "Verificación de Fuentes",
+                        aiPrompt: "«La IA afirma que mañana caerá una lluvia de meteoritos que suspenderá todas las clases del país, pero no muestra ningún enlace ni fuente.»",
+                        question: "¿Cuál es la forma más responsable de comprobar si esta información es verdadera?",
+                        options: [
+                            "Reenviar el mensaje a todos tus contactos para preguntar.",
+                            "Consultar fuentes oficiales como el Ministerio de Educación, observatorios astronómicos o noticias verificadas.",
+                            "Creerlo porque la IA nunca se equivoca con el clima."
+                        ],
+                        correctIndex: 1,
+                        neuroTip: "¡Exacto! Contrastar con fuentes primarias y oficiales es la regla de oro del verificador digital."
+                    },
+                    {
+                        type: "rewrite",
+                        tag: "Corrige la Noticia Alterada",
+                        aiPrompt: "«Noticia falsa de IA: Se ha descubierto que beber 5 litros de refresco azucarado al día mejora la memoria y sustituye al agua potable.»",
+                        question: "Redacta con tus propias palabras la información verdadera sobre la hidratación y el cerebro:",
+                        placeholder: "Escribe aquí por qué es falso y qué necesita realmente nuestro cuerpo...",
+                        keywords: ["agua", "salud", "azucar", "falso", "hidratar", "daño", "cerebro"],
+                        minKeywords: 1,
+                        modelAnswer: "Eso es falso: el exceso de azúcar daña la salud; el cerebro y el cuerpo necesitan beber agua natural diariamente para mantenerse hidratados y funcionar bien.",
+                        neuroTip: "Transformar una mentira en una explicación verdadera con tus palabras blinda tu mente contra la desinformación."
+                    },
+                    {
+                        type: "scenario",
+                        tag: "ESCENARIO 1: DIFUSIÓN DE NOTICIAS FALSAS",
+                        title: "Alerta Viral Generada por IA",
+                        context: "Recibes en tu grupo escolar una imagen y una noticia redactada por IA que dice: «¡URGENTE! El agua potable de la ciudad está contaminada y mañana cerrarán todas las escuelas por un mes». Muchos compañeros están asustados y te piden que la reenvíes rápido.",
+                        optionA: {
+                            label: "Opción A: Compartirla de inmediato sin verificarla para 'avisar' a todos",
+                            sceneIcon: "fa-bullhorn",
+                            sceneTitle: "¡CAOS Y DESINFORMACIÓN VIRAL!",
+                            sceneAnimationType: "error-viral",
+                            consequenceText: "Al compartir la noticia sin comprobarla, decenas de familias entraron en pánico innecesario y se saturaron las líneas de emergencia. Resultó ser un bulo inventado por IA.",
+                            reflection: "Neuro-Reflexión: El miedo activa la amígdala cerebral y nos impulsa a actuar sin pensar. Detenerse 30 segundos a verificar frena la cadena de desinformación."
+                        },
+                        optionB: {
+                            label: "Opción B: Investigar en medios oficiales y verificar la noticia antes de actuar",
+                            sceneIcon: "fa-magnifying-glass-chart",
+                            sceneTitle: "¡DESINFORMACIÓN DETENIDA A TIEMPO!",
+                            sceneAnimationType: "success-shield",
+                            consequenceText: "Revisaste la página oficial del municipio y del Ministerio de Educación: no había ninguna alerta. Compartiste el enlace oficial calmando al grupo y ganaste su confianza.",
+                            reflection: "Neuro-Reflexión: Verificar antes de compartir demuestra madurez digital y pensamiento crítico. ¡Has ganado la insignia Verificador de la Verdad!"
+                        }
+                    }
+                ]
+            },
+            {
+                id: 3,
+                title: "Nivel 3: Resuelve acertijos y corrige respuestas incorrectas",
+                shortTitle: "Acertijos y Privacidad",
+                description: "Descifra enigmas sobre seguridad digital, corrige respuestas sesgadas y protege tu identidad frente a herramientas desconocidas.",
+                badgeName: "Guardián de Seguridad Digital",
+                badgeIcon: "fa-user-lock",
+                color: "cyan",
+                activities: [
+                    {
+                        type: "riddle",
+                        tag: "Acertijo Neuronal #3",
+                        aiPrompt: "«Soy tuya, te identifica en la red, pero si me entregas a una IA desconocida, cualquiera podría suplantarte o rastrearte. ¿Qué soy?»",
+                        question: "Resuelve el acertijo de ciberseguridad:",
+                        options: [
+                            "Tu información personal y privacidad",
+                            "El brillo de tu pantalla",
+                            "El historial de búsqueda pública"
+                        ],
+                        correctIndex: 0,
+                        neuroTip: "Tus datos personales (nombre completo, dirección, contraseñas, fotos) son tu tesoro digital. ¡Protégelos siempre!"
+                    },
+                    {
+                        type: "choice",
+                        tag: "Detección de Sesgo en la IA",
+                        aiPrompt: "«IA dice: Solo los hombres pueden ser buenos ingenieros y programadores, mientras que las mujeres solo sirven para tareas artísticas.»",
+                        question: "¿Qué problema grave presenta esta respuesta de la IA?",
+                        options: [
+                            "Es un sesgo de género aprendido de estereotipos antiguos; hombres y mujeres tienen igual capacidad para la ciencia y el arte.",
+                            "Es una ley matemática comprobada.",
+                            "La IA tiene razón porque las computadoras lo dicen."
+                        ],
+                        correctIndex: 0,
+                        neuroTip: "¡Muy bien! La IA puede heredar prejuicios humanos presentes en internet. Nuestro deber es identificar y rechazar los sesgos."
+                    },
+                    {
+                        type: "rewrite",
+                        tag: "Corrige el Consejo Peligroso",
+                        aiPrompt: "«IA dice: Para recordar tus contraseñas fácilmente, escríbelas todas en un chat público de IA junto con tu correo y número de teléfono.»",
+                        question: "Corrige esta respuesta con tus propias palabras explicando cómo cuidar las contraseñas:",
+                        placeholder: "Escribe por qué nunca debemos compartir contraseñas con una IA...",
+                        keywords: ["nunca", "privado", "seguridad", "robar", "contraseña", "datos", "no compartir"],
+                        minKeywords: 1,
+                        modelAnswer: "Nunca debemos compartir contraseñas ni datos personales en chats de IA porque esa información puede quedar almacenada y ser vulnerada o robada.",
+                        neuroTip: "Articular reglas de seguridad con tus propias palabras crea hábitos protectores duraderos."
+                    },
+                    {
+                        type: "riddle",
+                        tag: "Acertijo Neuronal #4",
+                        aiPrompt: "«Cuanto más me entrenas con ejemplos variados y justos, menos discrimino; pero si me alimentas con prejuicios, los repito sin cesar. ¿Qué soy?»",
+                        question: "¿A qué componente de la IA se refiere este enigma?",
+                        options: [
+                            "El algoritmo y sus datos de entrenamiento",
+                            "El cable de alimentación eléctrica",
+                            "El teclado del computador"
+                        ],
+                        correctIndex: 0,
+                        neuroTip: "La calidad de una IA depende de los datos con los que fue entrenada. ¡Basura entra, basura sale!"
+                    },
+                    {
+                        type: "rewrite",
+                        tag: "Corrige Respuesta Incompleta",
+                        aiPrompt: "«IA dice: La única causa del calentamiento global es que las personas dejan las luces de su cuarto encendidas por la noche.»",
+                        question: "Amplía y corrige esta respuesta con tus conocimientos sobre el cambio climático:",
+                        placeholder: "Explica las verdaderas causas principales del calentamiento global...",
+                        keywords: ["combustibles", "contaminacion", "gases", "co2", "deforestacion", "industria", "efecto invernadero"],
+                        minKeywords: 1,
+                        modelAnswer: "Aunque ahorrar energía ayuda, las causas principales del calentamiento global son la quema de combustibles fósiles, las emisiones industriales de gases de efecto invernadero y la deforestación.",
+                        neuroTip: "Evitar explicaciones simplistas desarrolla el pensamiento complejo y sistémico."
+                    },
+                    {
+                        type: "scenario",
+                        tag: "ESCENARIO 2: EXPOSICIÓN DE DATOS PERSONALES",
+                        title: "La App de IA Desconocida",
+                        context: "Encuentras una página web nueva llamada 'SuperIA-AvatarGratis' que promete crear tu retrato futurista y hacer tus tareas. Para continuar, te pide: tu nombre completo, dirección de casa, teléfono de tus padres, contraseña de correo y 5 fotos personales.",
+                        optionA: {
+                            label: "Opción A: Compartir todos tus datos para obtener el avatar rápido",
+                            sceneIcon: "fa-user-secret",
+                            sceneTitle: "¡ALERTA DE PRIVACIDAD VULNERADA!",
+                            sceneAnimationType: "error-hack",
+                            consequenceText: "Al entregar tus datos a una plataforma desconocida, tu información queda expuesta en servidores sin seguridad, abriendo la puerta al robo de identidad, spam y suplantación.",
+                            reflection: "Neuro-Reflexión: La gratificación inmediata (querer el avatar rápido) puede nublar nuestro juicio. Ninguna herramienta educativa legítima necesita tus contraseñas ni tu dirección."
+                        },
+                        optionB: {
+                            label: "Opción B: Proteger tu información, cerrar el sitio y usar solo plataformas seguras",
+                            sceneIcon: "fa-shield-halved",
+                            sceneTitle: "¡IDENTIDAD DIGITAL PROTEGIDA!",
+                            sceneAnimationType: "success-shield",
+                            consequenceText: "¡Excelente decisión! Evitaste el robo de datos personales, mantuviste tu privacidad a salvo y demostraste criterio de ciberseguridad.",
+                            reflection: "Neuro-Reflexión: Proteger tu huella digital es esencial en la era de la IA. ¡Has desbloqueado la insignia Guardián de Seguridad Digital!"
+                        }
+                    }
+                ]
+            },
+            {
+                id: 4,
+                title: "Nivel 4: Demuestra que sabes utilizar la IA responsablemente",
+                shortTitle: "Maestro Ético de IA",
+                description: "Integra todo lo aprendido: pensamiento crítico, ética académica, prompts responsables y autonomía intelectual.",
+                badgeName: "Maestro Ético de la IA",
+                badgeIcon: "fa-crown",
+                color: "green",
+                activities: [
+                    {
+                        type: "choice",
+                        tag: "Uso Ético en el Estudio",
+                        aiPrompt: "«Tienes un examen de historia mañana y quieres usar una IA para estudiar de verdad.»",
+                        question: "¿Cuál es la mejor forma de utilizar la IA según la neurociencia del aprendizaje?",
+                        options: [
+                            "Pedirle que te haga preguntas de práctica y te explique lo que no entiendes, respondiendo tú primero.",
+                            "Pedirle que escriba un acordeón (chuleta) para copiar en el examen.",
+                            "Leer un resumen de 3 líneas y no practicar nada."
+                        ],
+                        correctIndex: 0,
+                        neuroTip: "¡Brillante! La autoevaluación activa (ponerte a prueba) es una de las técnicas más poderosas para consolidar la memoria a largo plazo."
+                    },
+                    {
+                        type: "riddle",
+                        tag: "Acertijo Neuronal #5",
+                        aiPrompt: "«Soy el motor que guía a la IA; si me escribes con claridad, contexto y respeto, te daré mejores pistas, pero nunca reemplazo tu propio criterio. ¿Qué soy?»",
+                        question: "¿Cómo se llama la instrucción o pregunta que le das a una IA?",
+                        options: [
+                            "Un Prompt (instrucción)",
+                            "Un cortafuegos",
+                            "Un píxel"
+                        ],
+                        correctIndex: 0,
+                        neuroTip: "Saber formular buenos 'prompts' requiere que primero ordenes tus propias ideas en tu mente."
+                    },
+                    {
+                        type: "rewrite",
+                        tag: "Crea un Prompt Responsable",
+                        aiPrompt: "«Mal uso: 'Hazme toda mi tarea de biología sobre la célula para copiar y pegar'.»",
+                        question: "Reescribe esa petición para pedirle a la IA que te ayude a aprender sin hacer el trabajo por ti:",
+                        placeholder: "Ejemplo: Explícame las partes de la célula con ejemplos y hazme 3 preguntas para practicar...",
+                        keywords: ["explica", "ayuda", "ejemplos", "entender", "preguntas", "practicar", "guia", "paso a paso"],
+                        minKeywords: 1,
+                        modelAnswer: "Por favor, explícame con ejemplos sencillos las partes principales de la célula y luego hazme 3 preguntas para comprobar si lo entendí.",
+                        neuroTip: "Pedir explicaciones y preguntas de práctica convierte a la IA en un tutor personal en lugar de un atajo."
+                    },
+                    {
+                        type: "tf",
+                        tag: "Ética y Derechos de Autor",
+                        aiPrompt: "«Afirmación: Presentar un texto o dibujo generado 100% por IA diciendo que lo hiciste completamente tú sin mencionarlo es deshonestidad académica.»",
+                        question: "¿Esta afirmación es Verdadera o Falsa?",
+                        correctBool: true,
+                        neuroTip: "¡Verdadero! La honestidad intelectual y la transparencia son pilares fundamentales del uso responsable de la tecnología."
+                    },
+                    {
+                        type: "riddle",
+                        tag: "Acertijo Final de Sabiduría",
+                        aiPrompt: "«La IA tiene millones de datos, pero solo yo tengo conciencia, ética, empatía y capacidad de verificar la verdad. ¿Quién soy?»",
+                        question: "Identifica al protagonista indispensable en la era de la IA:",
+                        options: [
+                            "El ser humano con pensamiento crítico",
+                            "Un servidor en la nube",
+                            "Un algoritmo automático"
+                        ],
+                        correctIndex: 0,
+                        neuroTip: "La tecnología es una extensión de la mente humana, nunca su sustituto."
+                    },
+                    {
+                        type: "scenario",
+                        tag: "ESCENARIO 3: DEPENDENCIA DE LA IA EN LAS TAREAS",
+                        title: "El Ensayo Escolar Decisivo",
+                        context: "Debes entregar un ensayo reflexivo sobre el cuidado del medio ambiente en tu comunidad. Abres una IA y, en 5 segundos, genera un texto completo de dos páginas. Tienes dos caminos posibles:",
+                        optionA: {
+                            label: "Opción A: Copiar y pegar todo lo que responde la IA sin leerlo ni comprenderlo",
+                            sceneIcon: "fa-battery-empty",
+                            sceneTitle: "¡ATROFIA DEL PENSAMIENTO CRÍTICO!",
+                            sceneAnimationType: "error-brain",
+                            consequenceText: "Entregaste el texto sin entenderlo. Cuando el docente te pidió explicar tus propias ideas en clase, no supiste qué responder y perdiste la oportunidad de desarrollar tu capacidad de análisis.",
+                            reflection: "Neuro-Reflexión: El cerebro sigue la regla 'úsalo o piérdelo'. Si delegas todo tu esfuerzo mental a la IA, tus redes neuronales de escritura y razonamiento se debilitan."
+                        },
+                        optionB: {
+                            label: "Opción B: Usar la IA como apoyo para organizar ideas, investigar y redactar con tus propias palabras",
+                            sceneIcon: "fa-brain",
+                            sceneTitle: "¡APRENDIZAJE CONSOLIDADO Y AUTONOMÍA!",
+                            sceneAnimationType: "success-shield",
+                            consequenceText: "Utilizaste la IA para lluvia de ideas, verificaste los datos ambientales de tu ciudad y escribiste un ensayo auténtico con tu propia voz. ¡Aprendiste de verdad!",
+                            reflection: "Neuro-Reflexión: Combinar la guía de la IA con tu esfuerzo activo produce la máxima consolidación del aprendizaje. ¡Has ganado la insignia Maestro Ético de la IA!"
+                        }
+                    }
+                ]
+            }
+        ];
+
+        /* ===========================================================
+           4. ESTADO GLOBAL DEL JUEGO
+           =========================================================== */
+        let state = {
+            currentScreen: 'portada',
+            currentLevelIndex: 0,
+            currentActivityIndex: 0,
+            // completed[levelIndex][activityIndex] = true/false
+            completed: [
+                [false, false, false, false, false, false],
+                [false, false, false, false, false, false],
+                [false, false, false, false, false, false],
+                [false, false, false, false, false, false]
+            ],
+            score: 0,
+            badges: [false, false, false, false]
+        };
+
+        // Guardar y cargar progreso en localStorage de forma segura
+        function saveProgress() {
+            try {
+                localStorage.setItem('ked_ai_game_v1', JSON.stringify({
+                    completed: state.completed,
+                    score: state.score,
+                    badges: state.badges
+                }));
+            } catch (e) {}
+        }
+
+        function loadProgress() {
+            try {
+                const raw = localStorage.getItem('ked_ai_game_v1');
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    if (Array.isArray(data.completed) && data.completed.length === 4) {
+                        state.completed = data.completed;
+                        state.score = data.score || 0;
+                        state.badges = data.badges || [false, false, false, false];
+                    }
+                }
+            } catch (e) {}
+        }
+
+        /* ===========================================================
+           5. NAVEGACIÓN ENTRE PANTALLAS Y ACTUALIZACIÓN HUD
+           =========================================================== */
+        function navigateTo(screenId) {
+            AudioFX.click();
+            state.currentScreen = screenId;
+
+            // Ocultar todas las secciones
+            document.querySelectorAll('.screen-section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+
+            // Mostrar la deseada
+            const target = document.getElementById(`screen-${screenId}`);
+            if (target) target.classList.add('active');
+
+            // Actualizar botones del navbar
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-cyber-cyan', 'text-cyber-bg', 'font-bold');
+                btn.classList.add('text-slate-300');
+            });
+            const activeNav = document.getElementById(`nav-${screenId}`);
+            if (activeNav) {
+                activeNav.classList.add('bg-cyber-cyan', 'text-cyber-bg', 'font-bold');
+                activeNav.classList.remove('text-slate-300');
+            }
+
+            // Renderizados específicos al entrar
+            if (screenId === 'niveles') renderLevelsMap();
+            if (screenId === 'resultados') renderResultsScreen();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            updateHUD();
+        }
+
+        function startAdventure() {
+            AudioFX.success();
+            // Buscar primer nivel incompleto o ir al nivel 1
+            let targetLevel = 0;
+            for (let i = 0; i < 4; i++) {
+                if (state.completed[i].includes(false)) {
+                    targetLevel = i;
+                    break;
+                }
+            }
+            openLevel(targetLevel);
+        }
+
+        function updateHUD() {
+            const totalActivities = 24;
+            let doneCount = 0;
+            state.completed.forEach(lvl => lvl.forEach(act => { if (act) doneCount++; }));
+
+            const pct = Math.round((doneCount / totalActivities) * 100);
+            const badgesCount = state.badges.filter(Boolean).length;
+
+            document.getElementById('hud-score').textContent = state.score;
+            document.getElementById('hud-progress-text').textContent = `${pct}%`;
+            document.getElementById('hud-progress-bar').style.width = `${pct}%`;
+            document.getElementById('hud-badges').textContent = `${badgesCount}/4`;
+        }
+
+        function toggleLabReveal(id, btn) {
+            AudioFX.click();
+            const box = document.getElementById(id);
+            if (box.classList.contains('hidden')) {
+                box.classList.remove('hidden');
+                btn.innerHTML = '<i class="fa-solid fa-eye-slash mr-1"></i> Ocultar Análisis';
+            } else {
+                box.classList.add('hidden');
+                btn.innerHTML = '<i class="fa-solid fa-magnifying-glass mr-1"></i> Detectar Error';
+            }
+        }
+
+        /* ===========================================================
+           6. RENDERIZADO DEL MAPA DE NIVELES
+           =========================================================== */
+        function renderLevelsMap() {
+            const grid = document.getElementById('levels-grid');
+            grid.innerHTML = '';
+
+            GAME_LEVELS.forEach((lvl, idx) => {
+                const doneInLvl = state.completed[idx].filter(Boolean).length;
+                const isComplete = doneInLvl === 6;
+                const pct = Math.round((doneInLvl / 6) * 100);
+
+                const borderColors = {
+                    cyan: 'border-cyber-cyan/40 hover:border-cyber-cyan',
+                    purple: 'border-cyber-purple/40 hover:border-cyber-purple',
+                    green: 'border-cyber-neonGreen/40 hover:border-cyber-neonGreen'
+                };
+
+                const badgeColors = {
+                    cyan: 'text-cyber-cyan bg-cyber-cyan/15 border-cyber-cyan/40',
+                    purple: 'text-cyber-purple bg-cyber-purple/15 border-cyber-purple/40',
+                    green: 'text-cyber-neonGreen bg-cyber-neonGreen/15 border-cyber-neonGreen/40'
+                };
+
+                const card = document.createElement('div');
+                card.className = `cyber-card rounded-3xl p-6 border ${borderColors[lvl.color]} flex flex-col justify-between relative overflow-hidden`;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="px-3 py-1 rounded-full text-xs font-display font-bold border ${badgeColors[lvl.color]}">
+                                NIVEL 0${lvl.id}
+                            </span>
+                            ${isComplete 
+                                ? `<span class="px-3 py-1 rounded-full text-xs font-bold bg-cyber-neonGreen/20 text-cyber-neonGreen border border-cyber-neonGreen/50"><i class="fa-solid fa-circle-check mr-1"></i>Completado</span>`
+                                : `<span class="text-xs font-semibold text-slate-400">${doneInLvl}/6 Desafíos</span>`
+                            }
+                        </div>
+
+                        <h3 class="font-display font-bold text-lg sm:text-xl text-white mb-2">${lvl.title}</h3>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed mb-4">${lvl.description}</p>
+
+                        <!-- Insignia del nivel -->
+                        <div class="flex items-center gap-2.5 p-3 rounded-xl bg-cyber-bg/80 border border-slate-700/80 mb-4">
+                            <div class="w-9 h-9 rounded-lg flex items-center justify-center ${state.badges[idx] ? 'bg-cyber-neonGreen/20 text-cyber-neonGreen border border-cyber-neonGreen/50' : 'bg-slate-800 text-slate-500'}">
+                                <i class="fa-solid ${lvl.badgeIcon}"></i>
+                            </div>
+                            <div>
+                                <div class="text-[10px] uppercase tracking-wider text-slate-400">Recompensa de Nivel</div>
+                                <div class="text-xs font-bold ${state.badges[idx] ? 'text-cyber-neonGreen' : 'text-slate-300'}">
+                                    Insignia: ${lvl.badgeName} ${state.badges[idx] ? '✓' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <!-- Barra de progreso del nivel -->
+                        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-4">
+                            <div class="h-full bg-gradient-to-r from-cyber-purple via-cyber-cyan to-cyber-neonGreen transition-all duration-500" style="width: ${pct}%"></div>
+                        </div>
+
+                        <button onclick="openLevel(${idx})" class="btn-cyber w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-purple text-cyber-bg font-display font-extrabold text-xs sm:text-sm tracking-wider flex items-center justify-center gap-2">
+                            <i class="fa-solid ${doneInLvl > 0 && !isComplete ? 'fa-forward' : 'fa-play'}"></i>
+                            ${isComplete ? 'REPASAR NIVEL' : (doneInLvl > 0 ? 'CONTINUAR NIVEL' : 'INICIAR NIVEL')}
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        /* ===========================================================
+           7. MOTOR DE ACTIVIDADES Y ESCENARIOS INTERACTIVOS
+           =========================================================== */
+        function openLevel(levelIndex) {
+            state.currentLevelIndex = levelIndex;
+            // Ir a la primera actividad pendiente del nivel, o a la 0 si ya completó todas
+            const firstPending = state.completed[levelIndex].indexOf(false);
+            state.currentActivityIndex = firstPending !== -1 ? firstPending : 0;
+
+            navigateTo('juego');
+            renderCurrentActivity();
+        }
+
+        function jumpToActivity(actIdx) {
+            AudioFX.click();
+            state.currentActivityIndex = actIdx;
+            renderCurrentActivity();
+        }
+
+        function prevActivity() {
+            if (state.currentActivityIndex > 0) {
+                AudioFX.click();
+                state.currentActivityIndex--;
+                renderCurrentActivity();
+            } else {
+                navigateTo('niveles');
+            }
+        }
+
+        function nextActivity() {
+            AudioFX.click();
+            if (state.currentActivityIndex < 5) {
+                state.currentActivityIndex++;
+                renderCurrentActivity();
+            } else {
+                // Nivel terminado
+                if (state.currentLevelIndex < 3) {
+                    openLevel(state.currentLevelIndex + 1);
+                } else {
+                    navigateTo('resultados');
+                }
+            }
+        }
+
+        function retryCurrentActivity() {
+            AudioFX.click();
+            renderCurrentActivity();
+        }
+
+        function renderActivityDots() {
+            const dotsContainer = document.getElementById('activity-dots');
+            dotsContainer.innerHTML = '';
+            const lvlCompleted = state.completed[state.currentLevelIndex];
+
+            for (let i = 0; i < 6; i++) {
+                const isCurrent = i === state.currentActivityIndex;
+                const isDone = lvlCompleted[i];
+                const btn = document.createElement('button');
+                btn.onclick = () => jumpToActivity(i);
+                btn.title = `Actividad ${i + 1}`;
+                btn.className = `w-7 h-7 rounded-lg font-display font-bold text-xs transition-all flex items-center justify-center border ${
+                    isCurrent 
+                        ? 'bg-cyber-cyan text-cyber-bg border-cyber-cyan scale-110 shadow-md shadow-cyber-cyan/40' 
+                        : isDone 
+                            ? 'bg-cyber-neonGreen/20 text-cyber-neonGreen border-cyber-neonGreen/50' 
+                            : 'bg-cyber-bg text-slate-400 border-slate-700 hover:border-slate-500'
+                }`;
+                btn.textContent = i + 1;
+                dotsContainer.appendChild(btn);
+            }
+        }
+
+        function renderCurrentActivity() {
+            const level = GAME_LEVELS[state.currentLevelIndex];
+            const activity = level.activities[state.currentActivityIndex];
+            const isAlreadyDone = state.completed[state.currentLevelIndex][state.currentActivityIndex];
+
+            document.getElementById('game-level-badge').textContent = `NIVEL 0${level.id}`;
+            document.getElementById('game-level-title').textContent = level.title;
+            document.getElementById('game-activity-num').textContent = state.currentActivityIndex + 1;
+
+            renderActivityDots();
+
+            const container = document.getElementById('activity-container');
+            container.classList.remove('border-glow-red', 'border-glow-green', 'animate-shake');
+
+            // Renderizar según tipo: 'choice', 'riddle', 'tf', 'rewrite', 'scenario'
+            if (activity.type === 'choice' || activity.type === 'riddle') {
+                const isRiddle = activity.type === 'riddle';
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="px-3.5 py-1 rounded-full text-xs font-display font-bold ${isRiddle ? 'bg-cyber-purple/20 text-cyber-purple border border-cyber-purple/50' : 'bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/50'}">
+                                <i class="fa-solid ${isRiddle ? 'fa-puzzle-piece' : 'fa-robot'} mr-1.5"></i>${activity.tag}
+                            </span>
+                            ${isAlreadyDone ? '<span class="text-xs font-bold text-cyber-neonGreen"><i class="fa-solid fa-check-circle mr-1"></i>Superado (+100 pts)</span>' : '<span class="text-xs text-slate-400">Recompensa: +100 pts</span>'}
+                        </div>
+
+                        <!-- Caja de mensaje de la IA -->
+                        <div class="p-5 rounded-2xl bg-cyber-bg/90 border border-cyber-cyan/35 relative">
+                            <div class="flex items-center gap-2 text-xs font-display font-bold text-cyber-cyan mb-2">
+                                <i class="fa-solid fa-terminal"></i> ${isRiddle ? 'ENIGMA DE K.E.D' : 'RESPUESTA GENERADA POR IA'}
+                            </div>
+                            <p class="text-base sm:text-lg text-white font-medium leading-relaxed">${activity.aiPrompt}</p>
+                        </div>
+
+                        <h4 class="font-bold text-base sm:text-lg text-slate-100">${activity.question}</h4>
+
+                        <!-- Opciones -->
+                        <div class="space-y-3" id="options-list">
+                            ${activity.options.map((opt, i) => `
+                                <button onclick="checkChoiceAnswer(${i})" class="option-item btn-cyber w-full text-left p-4 rounded-2xl bg-cyber-card/90 border border-slate-700 hover:border-cyber-cyan text-sm sm:text-base text-slate-200 flex items-center gap-3.5 transition-all">
+                                    <span class="w-8 h-8 rounded-xl bg-cyber-bg border border-slate-600 flex items-center justify-center font-display font-bold text-xs text-cyber-cyan shrink-0">
+                                        ${String.fromCharCode(65 + i)}
+                                    </span>
+                                    <span>${opt}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <div id="activity-feedback" class="hidden"></div>
+                    </div>
+                `;
+            } else if (activity.type === 'tf') {
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="px-3.5 py-1 rounded-full text-xs font-display font-bold bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/50">
+                                <i class="fa-solid fa-scale-balanced mr-1.5"></i>${activity.tag}
+                            </span>
+                            ${isAlreadyDone ? '<span class="text-xs font-bold text-cyber-neonGreen"><i class="fa-solid fa-check-circle mr-1"></i>Superado (+100 pts)</span>' : '<span class="text-xs text-slate-400">Recompensa: +100 pts</span>'}
+                        </div>
+
+                        <div class="p-6 rounded-2xl bg-cyber-bg/90 border border-cyber-purple/40">
+                            <div class="text-xs font-display font-bold text-cyber-purple mb-2">
+                                <i class="fa-solid fa-magnifying-glass mr-1"></i> VERIFICACIÓN DE HECHOS
+                            </div>
+                            <p class="text-base sm:text-xl text-white font-medium leading-relaxed">${activity.aiPrompt}</p>
+                        </div>
+
+                        <h4 class="font-bold text-base sm:text-lg text-center text-slate-100">${activity.question}</h4>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                            <button onclick="checkTFAnswer(true)" class="btn-cyber p-5 rounded-2xl bg-cyber-card border-2 border-cyber-neonGreen/40 hover:border-cyber-neonGreen text-white font-display font-bold text-lg flex items-center justify-center gap-3">
+                                <i class="fa-solid fa-circle-check text-cyber-neonGreen text-2xl"></i> VERDADERO
+                            </button>
+                            <button onclick="checkTFAnswer(false)" class="btn-cyber p-5 rounded-2xl bg-cyber-card border-2 border-cyber-danger/40 hover:border-cyber-danger text-white font-display font-bold text-lg flex items-center justify-center gap-3">
+                                <i class="fa-solid fa-circle-xmark text-cyber-danger text-2xl"></i> FALSO
+                            </button>
+                        </div>
+
+                        <div id="activity-feedback" class="hidden"></div>
+                    </div>
+                `;
+            } else if (activity.type === 'rewrite') {
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="px-3.5 py-1 rounded-full text-xs font-display font-bold bg-cyber-neonGreen/20 text-cyber-neonGreen border border-cyber-neonGreen/50">
+                                <i class="fa-solid fa-pen-to-square mr-1.5"></i>${activity.tag}
+                            </span>
+                            ${isAlreadyDone ? '<span class="text-xs font-bold text-cyber-neonGreen"><i class="fa-solid fa-check-circle mr-1"></i>Superado (+100 pts)</span>' : '<span class="text-xs text-slate-400">Recompensa: +100 pts</span>'}
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-cyber-danger/10 border border-cyber-danger/40">
+                            <div class="text-xs font-display font-bold text-cyber-danger mb-1.5">
+                                <i class="fa-solid fa-triangle-exclamation mr-1"></i> TEXTO DEFECTUOSO DE LA IA
+                            </div>
+                            <p class="text-sm sm:text-base text-slate-200 italic">${activity.aiPrompt}</p>
+                        </div>
+
+                        <div>
+                            <label for="rewrite-input" class="block font-bold text-base text-white mb-2">
+                                ${activity.question}
+                            </label>
+                            <textarea id="rewrite-input" rows="3" placeholder="${activity.placeholder}" class="w-full p-4 rounded-2xl bg-cyber-bg border border-cyber-cyan/40 focus:border-cyber-cyan focus:outline-none text-white text-sm sm:text-base placeholder-slate-500"></textarea>
+                            <p class="text-xs text-slate-400 mt-1.5">
+                                <i class="fa-solid fa-brain text-cyber-purple mr-1"></i> Consejo de K.E.D: Escribe una oración completa explicando la verdad con tus propias palabras.
+                            </p>
+                        </div>
+
+                        <button onclick="checkRewriteAnswer()" class="btn-cyber px-7 py-3.5 rounded-xl bg-gradient-to-r from-cyber-neonGreen to-cyber-cyan text-cyber-bg font-display font-extrabold text-sm tracking-wide flex items-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> COMPROBAR MI CORRECCIÓN
+                        </button>
+
+                        <div id="activity-feedback" class="hidden"></div>
+                    </div>
+                `;
+            } else if (activity.type === 'scenario') {
+                // ESCENARIO DE CONSECUENCIAS INTERACTIVAS
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="px-3.5 py-1 rounded-full text-xs font-display font-bold bg-gradient-to-r from-cyber-purple/30 to-cyber-cyan/30 text-white border border-cyber-cyan/60">
+                                <i class="fa-solid fa-code-branch text-cyber-neonGreen mr-1.5"></i>${activity.tag}
+                            </span>
+                            <span class="text-xs font-semibold text-cyber-cyan">Decisión Crítica Interactiva</span>
+                        </div>
+
+                        <div class="p-6 rounded-2xl bg-gradient-to-br from-cyber-bg to-cyber-card border border-cyber-purple/50 relative overflow-hidden">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-11 h-11 rounded-2xl bg-cyber-purple/25 border border-cyber-purple flex items-center justify-center text-cyber-cyan text-xl">
+                                    <i class="fa-solid fa-satellite-dish"></i>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] uppercase tracking-widest text-cyber-cyan font-bold">Simulación de Toma de Decisiones</span>
+                                    <h3 class="font-display font-bold text-lg sm:text-2xl text-white">${activity.title}</h3>
+                                </div>
+                            </div>
+                            <p class="text-sm sm:text-base text-slate-200 leading-relaxed bg-cyber-bg/70 p-4 rounded-xl border border-slate-700/80">
+                                ${activity.context}
+                            </p>
+                        </div>
+
+                        <div id="scenario-choices" class="space-y-4">
+                            <h4 class="font-display font-bold text-sm uppercase tracking-wider text-slate-300 text-center">
+                                ¿Qué decisión tomarás? Observa las consecuencias:
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button onclick="chooseScenarioOption('A')" class="btn-cyber p-5 rounded-2xl bg-cyber-card border-2 border-slate-600 hover:border-cyber-warning text-left transition-all flex flex-col justify-between gap-3">
+                                    <span class="inline-block px-2.5 py-1 rounded-lg bg-slate-800 text-cyber-warning font-display font-bold text-xs w-fit">ALTERNATIVA A</span>
+                                    <span class="text-sm sm:text-base font-semibold text-white">${activity.optionA.label}</span>
+                                </button>
+
+                                <button onclick="chooseScenarioOption('B')" class="btn-cyber p-5 rounded-2xl bg-cyber-card border-2 border-slate-600 hover:border-cyber-neonGreen text-left transition-all flex flex-col justify-between gap-3">
+                                    <span class="inline-block px-2.5 py-1 rounded-lg bg-slate-800 text-cyber-neonGreen font-display font-bold text-xs w-fit">ALTERNATIVA B</span>
+                                    <span class="text-sm sm:text-base font-semibold text-white">${activity.optionB.label}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Escena animada de consecuencia -->
+                        <div id="scenario-consequence-stage" class="hidden"></div>
+                    </div>
+                `;
+            }
+        }
+
+        /* ===========================================================
+           8. EVALUACIÓN DE RESPUESTAS Y CONSECUENCIAS INTERACTIVAS
+           =========================================================== */
+        function markActivityComplete() {
+            const lvlIdx = state.currentLevelIndex;
+            const actIdx = state.currentActivityIndex;
+
+            if (!state.completed[lvlIdx][actIdx]) {
+                state.completed[lvlIdx][actIdx] = true;
+                state.score += 100;
+            }
+
+            // Verificar si completó las 6 actividades del nivel para desbloquear insignia
+            if (state.completed[lvlIdx].every(Boolean) && !state.badges[lvlIdx]) {
+                state.badges[lvlIdx] = true;
+                AudioFX.badge();
+                launchCelebration();
+            }
+
+            saveProgress();
+            updateHUD();
+            renderActivityDots();
+        }
+
+        function launchCelebration() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 85,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#38BDF8', '#A855F7', '#39FF14']
+                });
+            }
+        }
+
+        function showFeedbackBox(isCorrect, message, extraHtml = '') {
+            const fb = document.getElementById('activity-feedback');
+            fb.classList.remove('hidden');
+
+            const isLastActivity = state.currentActivityIndex === 5;
+            const nextBtnText = isLastActivity 
+                ? (state.currentLevelIndex < 3 ? 'Siguiente Nivel' : 'Ver Resultados Finales') 
+                : 'Siguiente Desafío';
+
+            if (isCorrect) {
+                AudioFX.success();
+                markActivityComplete();
+                fb.innerHTML = `
+                    <div class="mt-4 p-5 rounded-2xl bg-cyber-neonGreen/15 border border-cyber-neonGreen/60 border-glow-green space-y-3 animate-[fadeInSlide_0.3s_ease]">
+                        <div class="flex items-center gap-2.5 text-cyber-neonGreen font-display font-bold text-base">
+                            <i class="fa-solid fa-circle-check text-xl"></i>
+                            <span>¡Excelente Trabajo Neuronal! (+100 Puntos)</span>
+                        </div>
+                        <p class="text-sm text-slate-200 leading-relaxed">${message}</p>
+                        ${extraHtml}
+                        <div class="pt-2">
+                            <button onclick="nextActivity()" class="btn-cyber px-6 py-3 rounded-xl bg-cyber-neonGreen text-cyber-bg font-display font-extrabold text-xs sm:text-sm tracking-wide flex items-center gap-2">
+                                ${nextBtnText} <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                AudioFX.error();
+                const container = document.getElementById('activity-container');
+                container.classList.add('animate-shake');
+                setTimeout(() => container.classList.remove('animate-shake'), 600);
+
+                fb.innerHTML = `
+                    <div class="mt-4 p-5 rounded-2xl bg-cyber-danger/15 border border-cyber-danger/60 space-y-3 animate-[fadeInSlide_0.3s_ease]">
+                        <div class="flex items-center gap-2.5 text-cyber-danger font-display font-bold text-base">
+                            <i class="fa-solid fa-circle-xmark text-xl"></i>
+                            <span>¡Analiza con más cuidado!</span>
+                        </div>
+                        <p class="text-sm text-slate-200 leading-relaxed">${message}</p>
+                        <div>
+                            <button onclick="retryCurrentActivity()" class="btn-cyber px-5 py-2.5 rounded-xl bg-cyber-danger text-white font-bold text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-rotate-left"></i> Volver a Intentarlo
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function checkChoiceAnswer(selectedIdx) {
+            const activity = GAME_LEVELS[state.currentLevelIndex].activities[state.currentActivityIndex];
+            const buttons = document.querySelectorAll('.option-item');
+
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === activity.correctIndex) {
+                    btn.classList.add('border-cyber-neonGreen', 'bg-cyber-neonGreen/15');
+                } else if (idx === selectedIdx && selectedIdx !== activity.correctIndex) {
+                    btn.classList.add('border-cyber-danger', 'bg-cyber-danger/15');
+                }
+            });
+
+            if (selectedIdx === activity.correctIndex) {
+                showFeedbackBox(true, activity.neuroTip);
+            } else {
+                showFeedbackBox(false, "Esa opción acepta el error de la IA o no resuelve el enigma. Lee nuevamente con atención y vuelve a intentarlo.");
+            }
+        }
+
+        function checkTFAnswer(userBool) {
+            const activity = GAME_LEVELS[state.currentLevelIndex].activities[state.currentActivityIndex];
+            if (userBool === activity.correctBool) {
+                showFeedbackBox(true, activity.neuroTip);
+            } else {
+                showFeedbackBox(false, "Tu respuesta no coincide con la verificación científica. Piensa bien si esa afirmación es real o inventada.");
+            }
+        }
+
+        function checkRewriteAnswer() {
+            const activity = GAME_LEVELS[state.currentLevelIndex].activities[state.currentActivityIndex];
+            const input = document.getElementById('rewrite-input');
+            const rawText = input.value.trim();
+
+            // Normalizar tildes y minúsculas para evaluar
+            const normalized = rawText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            if (rawText.length < 15) {
+                showFeedbackBox(false, "Tu explicación es muy breve. Escribe una oración completa con tus propias palabras (mínimo 15 caracteres) para ejercitar tu pensamiento crítico.");
+                return;
+            }
+
+            const matched = activity.keywords.some(kw => {
+                const normKw = kw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                return normalized.includes(normKw);
+            });
+
+            if (matched) {
+                const modelBox = `
+                    <div class="p-3.5 rounded-xl bg-cyber-bg/90 border border-cyber-cyan/40 text-xs text-slate-300">
+                        <strong class="text-cyber-cyan block mb-1"><i class="fa-solid fa-graduation-cap mr-1"></i> Respuesta Modelo de K.E.D para comparar:</strong>
+                        «${activity.modelAnswer}»
+                    </div>
+                `;
+                showFeedbackBox(true, activity.neuroTip, modelBox);
+            } else {
+                showFeedbackBox(false, `Asegúrate de incluir el concepto clave que corrige el error de la IA. Pista: reflexiona sobre palabras como "${activity.keywords.slice(0, 3).join(', ')}".`);
+            }
+        }
+
+        /* ===========================================================
+           ESCENARIOS DE CONSECUENCIAS INTERACTIVAS (OPCIONES A / B)
+           =========================================================== */
+        function chooseScenarioOption(option) {
+            const level = GAME_LEVELS[state.currentLevelIndex];
+            const activity = level.activities[state.currentActivityIndex];
+            const stage = document.getElementById('scenario-consequence-stage');
+            const choices = document.getElementById('scenario-choices');
+            const container = document.getElementById('activity-container');
+
+            choices.classList.add('hidden');
+            stage.classList.remove('hidden');
+
+            if (option === 'A') {
+                // CONSECUENCIA NEGATIVA ANIMADA
+                AudioFX.error();
+                container.classList.add('border-glow-red', 'animate-shake');
+                const overlay = document.getElementById('alert-overlay');
+                overlay.classList.add('active');
+                setTimeout(() => overlay.classList.remove('active'), 1100);
+
+                const dataA = activity.optionA;
+
+                // Ilustración animada de consecuencia negativa
+                let visualScene = '';
+                if (dataA.sceneAnimationType === 'error-viral') {
+                    visualScene = `
+                        <div class="flex items-center justify-center gap-4 py-3">
+                            <i class="fa-solid fa-share-nodes text-3xl text-cyber-danger animate-viral"></i>
+                            <div class="flex gap-2">
+                                <span class="px-2 py-1 rounded bg-cyber-danger/30 text-cyber-danger text-xs font-bold animate-bounce">¡FAKE!</span>
+                                <span class="px-2 py-1 rounded bg-cyber-danger/30 text-cyber-danger text-xs font-bold animate-bounce" style="animation-delay:0.15s">¡PÁNICO!</span>
+                                <span class="px-2 py-1 rounded bg-cyber-danger/30 text-cyber-danger text-xs font-bold animate-bounce" style="animation-delay:0.3s">¡VIRAL!</span>
+                            </div>
+                        </div>
+                    `;
+                } else if (dataA.sceneAnimationType === 'error-hack') {
+                    visualScene = `
+                        <div class="flex items-center justify-center gap-4 py-3">
+                            <i class="fa-solid fa-unlock-keyhole text-3xl text-cyber-danger animate-viral"></i>
+                            <div class="text-xs font-display text-cyber-danger tracking-widest uppercase">
+                                [ DATOS EXPUESTOS • PRIVACIDAD COMPROMETIDA ]
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    visualScene = `
+                        <div class="flex items-center justify-center gap-4 py-3">
+                            <i class="fa-solid ${dataA.sceneIcon} text-4xl text-cyber-danger animate-viral"></i>
+                        </div>
+                    `;
+                }
+
+                stage.innerHTML = `
+                    <div class="p-6 rounded-3xl bg-gradient-to-b from-cyber-danger/25 to-cyber-bg border-2 border-cyber-danger space-y-4 animate-[fadeInSlide_0.35s_ease]">
+                        <div class="text-center">
+                            <span class="px-3 py-1 rounded-full bg-cyber-danger text-white font-display font-bold text-xs uppercase tracking-wider">
+                                CONSECUENCIA DE TU ELECCIÓN (OPCIÓN A)
+                            </span>
+                            ${visualScene}
+                            <h4 class="font-display font-extrabold text-xl sm:text-2xl text-cyber-danger mt-1">${dataA.sceneTitle}</h4>
+                        </div>
+
+                        <p class="text-sm sm:text-base text-white bg-cyber-bg/85 p-4 rounded-2xl border border-cyber-danger/40 leading-relaxed">
+                            ${dataA.consequenceText}
+                        </p>
+
+                        <div class="p-4 rounded-2xl bg-cyber-purple/20 border border-cyber-purple/50 text-xs sm:text-sm text-slate-200 flex items-start gap-3">
+                            <i class="fa-solid fa-brain text-cyber-cyan text-lg mt-0.5"></i>
+                            <div>${dataA.reflection}</div>
+                        </div>
+
+                        <div class="text-center pt-2">
+                            <button onclick="retryScenario()" class="btn-cyber px-7 py-3.5 rounded-2xl bg-gradient-to-r from-cyber-warning to-cyber-danger text-white font-display font-extrabold text-xs sm:text-sm tracking-wider shadow-lg shadow-cyber-danger/30 inline-flex items-center gap-2">
+                                <i class="fa-solid fa-rotate-left"></i> VOLVER A INTENTARLO Y ESCOGER OTRA ALTERNATIVA
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // CONSECUENCIA POSITIVA ANIMADA + INSIGNIA
+                AudioFX.success();
+                container.classList.remove('border-glow-red');
+                container.classList.add('border-glow-green');
+                markActivityComplete();
+                launchCelebration();
+
+                const dataB = activity.optionB;
+                const isLastLevel = state.currentLevelIndex === 3;
+
+                stage.innerHTML = `
+                    <div class="p-6 rounded-3xl bg-gradient-to-b from-cyber-neonGreen/20 to-cyber-bg border-2 border-cyber-neonGreen space-y-4 animate-[fadeInSlide_0.35s_ease]">
+                        <div class="text-center">
+                            <span class="px-3.5 py-1 rounded-full bg-cyber-neonGreen text-cyber-bg font-display font-extrabold text-xs uppercase tracking-wider">
+                                ¡DECISIÓN RESPONSABLE! (+100 PUNTOS)
+                            </span>
+                            <div class="my-3 inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cyber-neonGreen/20 border-2 border-cyber-neonGreen text-cyber-neonGreen text-3xl animate-bounce">
+                                <i class="fa-solid ${dataB.sceneIcon}"></i>
+                            </div>
+                            <h4 class="font-display font-extrabold text-xl sm:text-2xl text-cyber-neonGreen text-glow-green">${dataB.sceneTitle}</h4>
+                        </div>
+
+                        <p class="text-sm sm:text-base text-white bg-cyber-bg/85 p-4 rounded-2xl border border-cyber-neonGreen/40 leading-relaxed">
+                            ${dataB.consequenceText}
+                        </p>
+
+                        <!-- Banner de Insignia Desbloqueada -->
+                        <div class="p-4 rounded-2xl bg-gradient-to-r from-cyber-purple/30 via-cyber-card to-cyber-cyan/30 border border-cyber-cyan flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-xl bg-cyber-neonGreen text-cyber-bg flex items-center justify-center text-xl shadow-md">
+                                    <i class="fa-solid ${level.badgeIcon}"></i>
+                                </div>
+                                <div>
+                                    <div class="text-[11px] font-display font-bold text-cyber-cyan uppercase">¡Insignia de Nivel Desbloqueada!</div>
+                                    <div class="font-display font-extrabold text-sm sm:text-base text-white">${level.badgeName}</div>
+                                </div>
+                            </div>
+                            <span class="text-cyber-neonGreen font-display font-bold text-xs">NIVEL ${level.id} SUPERADO</span>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-cyber-bg/80 border border-cyber-purple/40 text-xs sm:text-sm text-slate-200 flex items-start gap-3">
+                            <i class="fa-solid fa-brain text-cyber-purple text-lg mt-0.5"></i>
+                            <div>${dataB.reflection}</div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                            <button onclick="retryScenario()" class="btn-cyber px-5 py-3 rounded-xl bg-cyber-card border border-slate-600 text-slate-300 font-semibold text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-rotate"></i> Explorar otra opción
+                            </button>
+                            <button onclick="nextActivity()" class="btn-cyber px-7 py-3.5 rounded-xl bg-gradient-to-r from-cyber-neonGreen to-cyber-cyan text-cyber-bg font-display font-extrabold text-xs sm:text-sm tracking-wider flex items-center gap-2 shadow-lg shadow-cyber-neonGreen/30">
+                                ${isLastLevel ? 'VER RESULTADOS FINALES' : 'AVANZAR AL SIGUIENTE NIVEL'} <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function retryScenario() {
+            AudioFX.click();
+            const container = document.getElementById('activity-container');
+            container.classList.remove('border-glow-red', 'border-glow-green');
+            document.getElementById('scenario-consequence-stage').classList.add('hidden');
+            document.getElementById('scenario-choices').classList.remove('hidden');
+        }
+
+        /* ===========================================================
+           9. PANTALLA FINAL: RESULTADOS, INSIGNIAS Y REINICIO
+           =========================================================== */
+        function renderResultsScreen() {
+            let doneCount = 0;
+            state.completed.forEach(lvl => lvl.forEach(act => { if (act) doneCount++; }));
+            const pct = Math.round((doneCount / 24) * 100);
+            const badgesCount = state.badges.filter(Boolean).length;
+
+            document.getElementById('final-score').textContent = state.score.toLocaleString('es-ES');
+            document.getElementById('final-completed').textContent = `${doneCount}/24`;
+            document.getElementById('final-percent').textContent = `${pct}% de avance global`;
+            document.getElementById('final-badges-count').textContent = `${badgesCount}/4`;
+
+            const titleEl = document.getElementById('final-status-title');
+            const subEl = document.getElementById('final-status-subtitle');
+
+            if (doneCount === 24) {
+                titleEl.textContent = "¡FELICIDADES, MAESTRO DE LA IA!";
+                titleEl.className = "font-display font-black text-2xl sm:text-5xl text-cyber-neonGreen text-glow-green";
+                subEl.textContent = "Has completado los 24 desafíos y demostrado que sabes pensar críticamente, verificar información y usar la IA con ética.";
+                launchCelebration();
+            } else if (doneCount > 0) {
+                titleEl.textContent = "¡Gran Progreso con K.E.D!";
+                titleEl.className = "font-display font-black text-2xl sm:text-4xl text-cyber-cyan text-glow-cyan";
+                subEl.textContent = "Sigue practicando en los niveles pendientes para desbloquear las 4 insignias y alcanzar los 2,400 puntos.";
+            } else {
+                titleEl.textContent = "¡Tu Aventura Apenas Comienza!";
+                titleEl.className = "font-display font-black text-2xl sm:text-4xl text-white";
+                subEl.textContent = "Ingresa a los niveles para enfrentar acertijos, detectar errores de la IA y ganar todas tus insignias.";
+            }
+
+            // Renderizar galería de 4 insignias
+            const badgesGrid = document.getElementById('final-badges-grid');
+            badgesGrid.innerHTML = '';
+
+            GAME_LEVELS.forEach((lvl, idx) => {
+                const unlocked = state.badges[idx];
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-2xl border text-center transition-all ${
+                    unlocked 
+                        ? 'bg-gradient-to-b from-cyber-neonGreen/20 to-cyber-card border-cyber-neonGreen shadow-lg shadow-cyber-neonGreen/15' 
+                        : 'bg-cyber-bg/70 border-slate-800 opacity-60'
+                }`;
+
+                card.innerHTML = `
+                    <div class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-2xl mb-3 ${
+                        unlocked ? 'bg-cyber-neonGreen text-cyber-bg shadow-md' : 'bg-slate-800 text-slate-500'
+                    }">
+                        <i class="fa-solid ${lvl.badgeIcon}"></i>
+                    </div>
+                    <div class="text-[10px] font-display uppercase tracking-wider ${unlocked ? 'text-cyber-neonGreen' : 'text-slate-500'}">
+                        ${unlocked ? 'DESBLOQUEADA' : 'BLOQUEADA'}
+                    </div>
+                    <h4 class="font-display font-bold text-sm text-white mt-1">${lvl.badgeName}</h4>
+                    <p class="text-[11px] text-slate-400 mt-1">Nivel ${lvl.id}</p>
+                `;
+                badgesGrid.appendChild(card);
+            });
+        }
+
+        function resetFullGame() {
+            AudioFX.click();
+            state.completed = [
+                [false, false, false, false, false, false],
+                [false, false, false, false, false, false],
+                [false, false, false, false, false, false],
+                [false, false, false, false, false, false]
+            ];
+            state.score = 0;
+            state.badges = [false, false, false, false];
+            saveProgress();
+            updateHUD();
+            navigateTo('portada');
+        }
+
+        /* ===========================================================
+           10. INICIALIZACIÓN AL CARGAR LA PÁGINA
+           =========================================================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            initNeuralBackground();
+            loadProgress();
+            updateHUD();
+            navigateTo('portada');
+        });
+    </script>
+</body>
+</html>
